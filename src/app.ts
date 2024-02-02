@@ -6,9 +6,10 @@ import passport from 'passport';
 import config from './config';
 import { middleware as xss } from './middlewares';
 // import { jwtStrategy } from './module/auth';
-// import routes from './routes';
-// import { specs } from './routes/docs.routes';
 import httpStatus from 'http-status';
+import swagger from 'swagger-ui-express';
+import routes from './routes';
+import { specs } from './routes/docs.routes';
 import { ApiError, error, morgan } from './utils';
 
 const app = express();
@@ -35,8 +36,6 @@ app.use(xss());
 app.use(compression());
 
 // enable cors
-// app.use(cors());
-// app.options('*', cors());
 app.use(
   cors({
     origin: 'http://localhost:3000', // Specify the allowed origin
@@ -45,7 +44,7 @@ app.use(
 );
 
 // api docs
-// app.use('/docs', swagger.serve, swagger.setup(specs));
+app.use('/docs', swagger.serve, swagger.setup(specs));
 
 // jwt authentication
 app.use(passport.initialize());
@@ -55,7 +54,7 @@ app.use(passport.initialize());
 app.use('/uploads', express.static('uploads'));
 
 // v1 api routes
-// app.use('/api/v1', routes);
+app.use('/api/v1', routes);
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
