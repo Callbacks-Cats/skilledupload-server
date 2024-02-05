@@ -38,20 +38,22 @@ export const errorHandler = (err: ApiError, _req: Request, res: Response, _next:
   let { statusCode, message } = err;
   if (config.env === 'production' && !err.isOperational) {
     statusCode = httpStatus.INTERNAL_SERVER_ERROR;
-    message = 'Inernal Server Error';
+    message = 'Internal Server Error';
   }
 
   res.locals['errorMessage'] = err.message;
 
   const response = {
+    success: false,
+    error: message,
     code: statusCode,
-    message,
-    ...(config.env === 'development' && { stack: err.stack })
+    stack: err.isOperational ? err.stack : '',
+    data: null
   };
 
   if (config.env === 'development') {
     logger.error(err);
   }
 
-  return res.status(statusCode).send(response);
+  return res.status(statusCode).json(response);
 };
