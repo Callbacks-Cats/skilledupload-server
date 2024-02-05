@@ -36,6 +36,7 @@
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.6",
     "@types/uuid": "^9.0.8",
+    "@types/validator": "^13.11.8",
     "@types/xss-filters": "^0.0.30",
     "cross-env": "^7.0.3",
     "eslint-config-prettier": "^9.1.0",
@@ -63,6 +64,7 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
     "uuid": "^9.0.1",
+    "validator": "^13.11.0",
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^4.7.1",
     "xss-filters": "^1.2.7"
