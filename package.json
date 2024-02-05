@@ -15,7 +15,9 @@
     "lint:fix": "eslint --fix --ext .ts src",
     "prettier": "prettier --write \"src/**/*.ts\"",
     "prettier:check": "prettier --check \"src/**/*.ts\"",
-    "pre-commit": "lint-staged"
+    "pre-commit": "lint-staged",
+    "docker:start": "docker-compose up -d",
+    "docker:stop": "docker-compose down"
   },
   "keywords": [],
   "author": "",
