@@ -79,5 +79,7 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
           example:
+            success: false
+            data: null
             code: 404
-            message: Not found
+            error: Not found
