@@ -143,7 +143,8 @@ List of available routes:
 `POST /api/v1/auth/register` - register\
 `POST /api/v1/auth/login` - login\
 `POST /api/v1/auth/forgot-password` - send reset password email\
-`POST /api/v1/auth/reset-password` - reset password
+`POST /api/v1/auth/reset-password` - reset password\
+`POST /api/v1/auth/verify-email` - verify email
 
 ## Contributing
 
