@@ -21,3 +21,18 @@ export const login = {
     password: Joi.string().required()
   })
 };
+
+export const forgotPassword = {
+  body: Joi.object().keys({
+    email: Joi.string().email().required()
+  })
+};
+
+export const resetPassword = {
+  qeury: Joi.object().keys({
+    token: Joi.string().required()
+  }),
+  body: Joi.object().keys({
+    password: Joi.string().required().custom(password)
+  })
+};

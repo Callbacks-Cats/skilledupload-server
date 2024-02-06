@@ -1,7 +1,7 @@
 import httpStatus from 'http-status';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { ApiError } from '../../utils';
-import { IUserDoc, NewCreatedUser } from './user.interface';
+import { IUserDoc, NewCreatedUser, UpdateUserBody } from './user.interface';
 import User from './user.model';
 
 /**
@@ -43,3 +43,25 @@ export const getUserById = async (id: mongoose.Types.ObjectId): Promise<IUserDoc
  */
 export const getUserByEmail = async (email: string): Promise<IUserDoc | null> =>
   User.findOne({ email });
+
+/**
+ * Update user by id
+ * @param {mongoose.Types.ObjectId} userId
+ * @param {UpdateUserBody} updateBody
+ * @returns {Promise<IUserDoc | null>}
+ */
+export const updateUserById = async (
+  userId: string,
+  updateBody: UpdateUserBody
+): Promise<IUserDoc | null> => {
+  const user = await getUserById(new mongoose.Types.ObjectId(userId));
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+  if (updateBody.email && (await User.isEmailTaken(updateBody.email, new Types.ObjectId(userId)))) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+  }
+  Object.assign(user, updateBody);
+  await user.save();
+  return user;
+};
