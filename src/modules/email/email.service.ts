@@ -58,3 +58,27 @@ export const sendResetPasswordEmail = async (to: string, token: string) => {
   <p><strong>Team</strong></p></div>`;
   await sendEmail(to, subject, text, html);
 };
+
+/**
+ * Send verification email
+ * @param {string} to
+ * @param {string} token
+ * @param {string} name
+ * @returns {Promise<void>}
+ */
+export const sendVerificationEmail = async (
+  to: string,
+  token: string,
+  name: string
+): Promise<void> => {
+  const subject = 'Account Verification';
+  // TODO: It should be an actual URL of the frontend
+  const verificationUrl = `${config.clientUrl}/verify-email?token=${token}`;
+  const text = `Hi ${name},
+  To verify your email, click on this link: ${verificationUrl}
+  If you did not create an account, then ignore this email.`;
+  const html = `<div style="margin:30px; padding:30px; border:1px solid black; border-radius: 20px 10px;"><h4><strong>Hi ${name},</strong></h4>
+  <p>To verify your email, click on this link: ${verificationUrl}</p>
+  <p>If you did not create an account, then ignore this email.</p></div>`;
+  await sendEmail(to, subject, text, html);
+};

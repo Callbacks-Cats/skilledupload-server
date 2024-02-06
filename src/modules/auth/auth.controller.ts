@@ -11,13 +11,14 @@ export const register = catchAsync(async (req: Request, res: Response) => {
   logger.info(`Registering user: ${req.body.email}`);
   const user = await userService.registerUser(req.body);
   const tokens = await tokenService.generateAuthTokens(user);
-  return SendResponse(
-    res,
-    true,
-    { user, tokens },
-    httpStatus.CREATED,
-    'User registered successfully'
+  // TODO: this should be sent via task queue
+  const verifyEmailToken = await tokenService.generateVerifyEmailToken(user);
+  await emailService.sendVerificationEmail(
+    user.email,
+    verifyEmailToken,
+    `${user?.firstName} ${user?.lastName}`
   );
+  return SendResponse(res, true, user, httpStatus.CREATED, 'User registered successfully');
 });
 
 export const login = catchAsync(async (req: Request, res: Response) => {
@@ -39,4 +40,11 @@ export const resetPassword = catchAsync(async (req: Request, res: Response) => {
   logger.info(`Resetting password`);
   await authService.resetPassword(req.query['token'] as string, req.body.password);
   return SendResponse(res, true, null, httpStatus.OK, 'Password reset successful');
+});
+
+export const verifyEmail = catchAsync(async (req: Request, res: Response) => {
+  logger.info(`Verifying email`);
+  const user = await authService.verifyEmail(req.query['token'] as string);
+  const token = await tokenService.generateAuthTokens(user as any);
+  return SendResponse(res, true, { user, token }, httpStatus.OK, 'Email verified successfully');
 });

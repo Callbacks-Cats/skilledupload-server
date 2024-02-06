@@ -17,6 +17,7 @@ router.post(
   validate(authValidation.resetPassword),
   authController.resetPassword
 );
+router.post('/verify-email', validate(authValidation.verifyEmail), authController.verifyEmail);
 
 export default router;
 
@@ -208,4 +209,33 @@ export default router;
  *               data: null
  *               code: 401
  *               error: Password reset failed
+ */
+
+/**
+ * @swagger
+ * /auth/verify-email:
+ *   post:
+ *     summary: verify email
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The verify email token
+ *     responses:
+ *       "204":
+ *         description: No content
+ *       "401":
+ *         description: verify email failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               success: false
+ *               data: null
+ *               code: 401
+ *               error: verify email failed
  */
