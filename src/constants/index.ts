@@ -8,7 +8,7 @@ export const USER_STATUSES = {
 export const USER_ROLES = {
   USER: 'user',
   ADMIN: 'admin',
-  INSTRUCTOR: 'instructor'
+  HIRER: 'hirer'
 };
 
 export const TOKEN_TYPES = {

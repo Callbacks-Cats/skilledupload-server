@@ -42,3 +42,9 @@ export const verifyEmail = {
     token: Joi.string().required()
   })
 };
+
+export const verifyOtp = {
+  body: Joi.object().keys({
+    otp: Joi.string().required().max(4).min(4)
+  })
+};

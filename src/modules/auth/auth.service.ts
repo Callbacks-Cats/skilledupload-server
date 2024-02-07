@@ -2,6 +2,8 @@ import httpStatus from 'http-status';
 import { Types } from 'mongoose';
 import { USER_STATUSES } from '../../constants';
 import { ApiError } from '../../utils';
+import { otpService } from '../otp';
+import Otp from '../otp/otp.model';
 import { Token, tokenService, tokenTypes } from '../token';
 import { IUserDoc } from '../user/user.interface';
 import { getUserByEmail, getUserById, updateUserById } from '../user/user.service';
@@ -67,4 +69,20 @@ export const verifyEmail = async (verifyEmailToken: string): Promise<IUserDoc | 
   } catch (error) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Email verification failed');
   }
+};
+
+/**
+ * Verify otp
+ * @param {string} otp
+ * @returns {Promise<IUserDoc | null>}
+ */
+export const verifyOtp = async (otp: string): Promise<IUserDoc | null> => {
+  const otpDoc = await otpService.verifyOtp(otp);
+  const user = await getUserById(new Types.ObjectId(otpDoc.user));
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'No user found with this otp');
+  }
+  const updatedUser = await updateUserById(user.id, { status: USER_STATUSES.ACTIVE });
+  await Otp.deleteMany({ user: user.id });
+  return updatedUser;
 };
