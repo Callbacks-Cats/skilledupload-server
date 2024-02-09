@@ -21,7 +21,6 @@ const userSchema = new Schema<IUserDoc, IUserModel>(
     },
     email: {
       type: String,
-      required: true,
       unique: true,
       trim: true,
       lowercase: true,
@@ -56,6 +55,7 @@ const userSchema = new Schema<IUserDoc, IUserModel>(
     phoneNumber: {
       type: String,
       trim: true,
+      unique: true,
       validate(value: string) {
         if (!validator.isMobilePhone(value, 'any')) {
           throw new Error('Invalid phone number');
@@ -84,6 +84,20 @@ userSchema.static(
   'isEmailTaken',
   async function (email: string, excludeUserId: mongoose.ObjectId): Promise<boolean> {
     const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
+    return !!user;
+  }
+);
+
+/**
+ * Check if phone number is taken
+ * @param {stirng} phoneNumber - The user's phone number
+ * @param {ObjectId} [excludeUserId] - The id of the user to be excluded
+ * @returns {Promise<boolean>}
+ */
+userSchema.static(
+  'isPhoneNumberTaken',
+  async function (phoneNumber: string, excludeUserId: mongoose.ObjectId): Promise<boolean> {
+    const user = await this.findOne({ phoneNumber, _id: { $ne: excludeUserId } });
     return !!user;
   }
 );

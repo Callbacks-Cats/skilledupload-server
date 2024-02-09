@@ -10,7 +10,7 @@ import User from './user.model';
  * @returns {Promise<IUserDoc>}
  */
 export const createUser = async (userBody: NewCreatedUser): Promise<IUserDoc> => {
-  if (await User.isEmailTaken(userBody.email)) {
+  if (await User.isEmailTaken(userBody?.email as string)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
   return User.create(userBody);
@@ -22,7 +22,14 @@ export const createUser = async (userBody: NewCreatedUser): Promise<IUserDoc> =>
  * @returns {Promise<IUserDoc>}
  */
 export const registerUser = async (userBody: NewCreatedUser): Promise<IUserDoc> => {
-  if (await User.isEmailTaken(userBody.email)) {
+  // if  user body has phone number or email then check that already have an user based on phoneNumber and email
+  if (
+    (await User.isEmailTaken(userBody?.email as string)) ||
+    (await User.isPhoneNumberTaken(userBody?.phoneNumber as string))
+  ) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Already have an user!');
+  }
+  if (await User.isEmailTaken(userBody?.email as string)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
   return User.create(userBody);
@@ -43,6 +50,14 @@ export const getUserById = async (id: mongoose.Types.ObjectId): Promise<IUserDoc
  */
 export const getUserByEmail = async (email: string): Promise<IUserDoc | null> =>
   User.findOne({ email });
+
+/**
+ * Get user by phone number
+ * @param {string} phoneNumber
+ * @returns {Promise<IUserDoc | null>}
+ */
+export const getUserByPhone = async (phoneNumber: string): Promise<IUserDoc | null> =>
+  User.findOne({ phoneNumber });
 
 /**
  * Update user by id

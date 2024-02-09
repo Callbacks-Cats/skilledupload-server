@@ -4,7 +4,6 @@ import { USER_ROLES } from '../../constants';
 import { catchAsync, logger } from '../../utils';
 import { SendResponse } from '../../utils/SendRespnse';
 import { emailService } from '../email';
-import { otpService } from '../otp';
 import { tokenService } from '../token';
 import { userService } from '../user';
 import * as authService from './auth.service';
@@ -20,18 +19,18 @@ export const register = catchAsync(async (req: Request, res: Response) => {
     // TODO: this should be sent via task queue
     const verifyEmailToken = await tokenService.generateVerifyEmailToken(user);
     await emailService.sendVerificationEmail(
-      user.email,
+      user?.email as any,
       verifyEmailToken,
       `${user?.firstName} ${user?.lastName}`
     );
   } else if (user.role === USER_ROLES.USER) {
     // TODO: this should be sent via task queue & sms service. [Right now we are using email service for testing purpose.]
-    const otp = await otpService.generateOtp(user.id);
-    await emailService.sendVerificationEmail(
-      user.email,
-      otp,
-      `${user?.firstName} ${user?.lastName}`
-    );
+    // const otp = await otpService.generateOtp(user.id);
+    // await emailService.sendVerificationEmail(
+    //   user?.email as any,
+    //   otp,
+    //   `${user?.firstName} ${user?.lastName}`
+    // );
   }
 
   return SendResponse(res, true, user, httpStatus.CREATED, 'User registered successfully');
@@ -39,9 +38,16 @@ export const register = catchAsync(async (req: Request, res: Response) => {
 
 export const login = catchAsync(async (req: Request, res: Response) => {
   logger.info(`Logging in user: ${req.body.email}`);
-  const { email, password } = req.body;
-  const user = await authService.loginUserWithEmailAndPassword(email, password);
-  const token = await tokenService.generateAuthTokens(user);
+  const { email, password, role, phoneNumber } = req.body;
+  let user;
+  if (role === USER_ROLES.HIRER) {
+    user = await authService.loginUserWithEmailAndPassword(email, password);
+  }
+  if (role === USER_ROLES.USER) {
+    user = await authService.loginUserWithPhoneNumber(phoneNumber, password);
+  }
+  // const user = await authService.loginUserWithEmailAndPassword(email, password);
+  const token = await tokenService.generateAuthTokens(user as any);
   return SendResponse(res, true, { user, token }, httpStatus.OK, 'Login successful');
 });
 

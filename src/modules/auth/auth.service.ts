@@ -6,7 +6,7 @@ import { otpService } from '../otp';
 import Otp from '../otp/otp.model';
 import { Token, tokenService, tokenTypes } from '../token';
 import { IUserDoc } from '../user/user.interface';
-import { getUserByEmail, getUserById, updateUserById } from '../user/user.service';
+import { getUserByEmail, getUserById, getUserByPhone, updateUserById } from '../user/user.service';
 
 /**
  * Login with username and password
@@ -21,6 +21,23 @@ export const loginUserWithEmailAndPassword = async (
   const user = await getUserByEmail(email);
   if (!user || !(await user.isPasswordMatch(password))) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
+  }
+  return user;
+};
+
+/**
+ * Login with phone number and password
+ * @param {string} phoneNumber
+ * @param {string} password
+ * @returns {Promise<IUserDoc>}
+ */
+export const loginUserWithPhoneNumber = async (
+  phoneNumber: string,
+  password: string
+): Promise<IUserDoc> => {
+  const user = await getUserByPhone(phoneNumber);
+  if (!user || !(await user.isPasswordMatch(password))) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect phone number or password');
   }
   return user;
 };

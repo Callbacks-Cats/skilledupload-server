@@ -1,24 +1,39 @@
 import Joi from 'joi';
 import { password } from '../../validation';
-import { NewCreatedUser } from '../user/user.interface';
-
-const createUserBody: Record<keyof NewCreatedUser, any> = {
-  email: Joi.string().email(),
-  firstName: Joi.string().required(),
-  lastName: Joi.string().required(),
-  password: Joi.string().required().custom(password),
-  phoneNumber: Joi.string(),
-  role: Joi.string().required().valid('user', 'admin', 'hirer')
-};
 
 export const register = {
-  body: Joi.object().keys(createUserBody)
+  body: Joi.object().keys({
+    firstName: Joi.string().required(),
+    lastName: Joi.string().required(),
+    email: Joi.string().when('role', {
+      is: 'hirer',
+      then: Joi.string().required(),
+      otherwise: Joi.forbidden()
+    }),
+    phoneNumber: Joi.string().when('role', {
+      is: 'user',
+      then: Joi.string().required(),
+      otherwise: Joi.forbidden()
+    }),
+    password: Joi.string().required().custom(password),
+    role: Joi.string().required()
+  })
 };
 
 export const login = {
   body: Joi.object().keys({
-    email: Joi.string().required(),
-    password: Joi.string().required()
+    email: Joi.string().when('role', {
+      is: 'hirer',
+      then: Joi.string().required(),
+      otherwise: Joi.forbidden()
+    }),
+    password: Joi.string().required(),
+    phoneNumber: Joi.string().when('role', {
+      is: 'user',
+      then: Joi.string().required(),
+      otherwise: Joi.forbidden()
+    }),
+    role: Joi.string().required().valid('user', 'admin', 'hirer')
   })
 };
 
