@@ -52,8 +52,10 @@ export const login = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const forgotPassword = catchAsync(async (req: Request, res: Response) => {
-  logger.info(`Forgot password request: ${req.body.email}`);
-  const resetPasswordToken = await tokenService.generateResetPasswordToken(req.body.email);
+  logger.info(
+    `Forgot password request: ${(req?.body?.email && req?.body?.email) || req?.body?.phoneNumber}`
+  );
+  const resetPasswordToken = await tokenService.generateResetPasswordToken(req.body);
   await emailService.sendResetPasswordEmail(req.body.email, resetPasswordToken);
   return SendResponse(res, true, null, httpStatus.OK, 'Password reset token sent to email');
 });

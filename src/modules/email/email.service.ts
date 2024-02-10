@@ -47,7 +47,7 @@ export const sendEmail = async (
  */
 export const sendResetPasswordEmail = async (to: string, token: string) => {
   const subject = 'Reset password';
-  const resetPasswordUrl = `${config.clientUrl}/reset-password?token=${token}`;
+  const resetPasswordUrl = `${config.clientUrl}/auth/reset-password?token=${token}`;
   const text = `Hi,
   To reset your password, click on this link: ${resetPasswordUrl}
   If you did not request any password resets, then ignore this email.`;
