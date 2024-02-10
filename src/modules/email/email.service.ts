@@ -73,7 +73,7 @@ export const sendVerificationEmail = async (
 ): Promise<void> => {
   const subject = 'Account Verification';
   // TODO: It should be an actual URL of the frontend
-  const verificationUrl = `${config.clientUrl}/verify-email?token=${token}`;
+  const verificationUrl = `${config.clientUrl}/auth/account-verification?token=${token}`;
   const text = `Hi ${name},
   To verify your email, click on this link: ${verificationUrl}
   If you did not create an account, then ignore this email.`;

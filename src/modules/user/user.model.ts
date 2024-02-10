@@ -30,6 +30,17 @@ const userSchema = new Schema<IUserDoc, IUserModel>(
         }
       }
     },
+    phoneNumber: {
+      type: String,
+      trim: true,
+      unique: true,
+      default: ''
+      // validate(value: string) {
+      //   if (!validator.isMobilePhone(value, 'any')) {
+      //     throw new Error('Invalid phone number');
+      //   }
+      // }
+    },
     password: {
       type: String,
       required: true,
@@ -52,16 +63,7 @@ const userSchema = new Schema<IUserDoc, IUserModel>(
       enum: Object.values(USER_STATUSES),
       default: USER_STATUSES.INACTIVE
     },
-    phoneNumber: {
-      type: String,
-      trim: true,
-      unique: true,
-      validate(value: string) {
-        if (!validator.isMobilePhone(value, 'any')) {
-          throw new Error('Invalid phone number');
-        }
-      }
-    },
+
     profilePicture: {
       type: String,
       trim: true
