@@ -39,7 +39,17 @@ export const login = {
 
 export const forgotPassword = {
   body: Joi.object().keys({
-    email: Joi.string().email().required()
+    email: Joi.string().when('role', {
+      is: 'hirer',
+      then: Joi.string().required(),
+      otherwise: Joi.forbidden()
+    }),
+    role: Joi.string().required().valid('user', 'admin', 'hirer'),
+    phoneNumber: Joi.string().when('role', {
+      is: 'user',
+      then: Joi.string().required(),
+      otherwise: Joi.forbidden()
+    })
   })
 };
 

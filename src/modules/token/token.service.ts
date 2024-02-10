@@ -89,8 +89,8 @@ export const verifyToken = async (token: string, type: string): Promise<ITokenDo
  */
 export const generateAuthTokens = async (user: IUserDoc): Promise<string> => {
   const accessTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
-  const accessToken = generateToken(user.id, accessTokenExpires, tokenTypes.REFRESH);
-  await saveToken(accessToken, user.id, accessTokenExpires, tokenTypes.REFRESH);
+  const accessToken = generateToken(user.id, accessTokenExpires, tokenTypes.ACCESS);
+  await saveToken(accessToken, user.id, accessTokenExpires, tokenTypes.ACCESS);
   return accessToken;
 };
 

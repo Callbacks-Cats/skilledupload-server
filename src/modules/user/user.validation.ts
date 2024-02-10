@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { password } from '../../validation';
+import { objectId, password } from '../../validation';
 import { NewCreatedUser } from './user.interface';
 
 const createUserBody: Record<keyof NewCreatedUser, any> = {
@@ -13,4 +13,10 @@ const createUserBody: Record<keyof NewCreatedUser, any> = {
 
 export const createUser = {
   body: Joi.object(createUserBody).keys(createUserBody)
+};
+
+export const getUserById = {
+  params: Joi.object({
+    userId: Joi.string().required().custom(objectId)
+  })
 };
