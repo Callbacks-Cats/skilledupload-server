@@ -73,5 +73,28 @@ const applicationSchema = new Schema<IApplicantDoc, IApplicantModel>(
   { timestamps: true }
 );
 
+/**
+ * @name isProfileComplete
+ * @description Check if the user has completed their profile
+ * @param {string} userId - The user id
+ * @returns {boolean} - True if the user has completed their profile
+ */
+applicationSchema.statics.isProfileComplete = async function (userId: string): Promise<boolean> {
+  const applicant = await this.findOne({ user: userId });
+  if (!applicant) {
+    return false;
+  }
+  if (
+    !applicant.intro ||
+    !applicant.education ||
+    applicant.education.length === 0 ||
+    !applicant.experience ||
+    applicant.experience.length === 0
+  ) {
+    return false;
+  }
+  return true;
+};
+
 const Applicant = model<IApplicantDoc, IApplicantModel>('Applicant', applicationSchema);
 export default Applicant;
