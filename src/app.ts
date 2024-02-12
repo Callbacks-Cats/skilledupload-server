@@ -11,6 +11,7 @@ import { jwtStrategy } from './modules/auth';
 import routes from './routes';
 import { specs } from './routes/docs.routes';
 import { ApiError, error, morgan } from './utils';
+import { authLimiter } from './utils/rateLimiter';
 
 const app = express();
 
@@ -49,6 +50,11 @@ app.use('/docs', swagger.serve, swagger.setup(specs));
 // jwt authentication
 app.use(passport.initialize());
 passport.use('jwt', jwtStrategy);
+
+// limit repeated failed requests to auth endpoints
+if (config.env === 'production') {
+  app.use('/api/v1/auth', authLimiter);
+}
 
 // serve static files
 app.use('/uploads', express.static('uploads'));
