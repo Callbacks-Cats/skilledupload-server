@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import moment, { Moment } from 'moment';
 import mongoose from 'mongoose';
 import config from '../../config';
+import { USER_ROLES } from '../../constants';
 import { ApiError } from '../../utils';
 import { userService } from '../user';
 import { IUserDoc } from '../user/user.interface';
@@ -89,8 +90,8 @@ export const verifyToken = async (token: string, type: string): Promise<ITokenDo
  */
 export const generateAuthTokens = async (user: IUserDoc): Promise<string> => {
   const accessTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
-  const accessToken = generateToken(user.id, accessTokenExpires, tokenTypes.REFRESH);
-  await saveToken(accessToken, user.id, accessTokenExpires, tokenTypes.REFRESH);
+  const accessToken = generateToken(user.id, accessTokenExpires, tokenTypes.ACCESS);
+  await saveToken(accessToken, user.id, accessTokenExpires, tokenTypes.ACCESS);
   return accessToken;
 };
 
@@ -99,15 +100,36 @@ export const generateAuthTokens = async (user: IUserDoc): Promise<string> => {
  * @param {string} email
  * @returns {Promise<string>}
  */
-export const generateResetPasswordToken = async (email: string): Promise<string> => {
-  const user = await userService.getUserByEmail(email);
-  if (!user) {
-    throw new ApiError(httpStatus.NO_CONTENT, '');
+export const generateResetPasswordToken = async (body: {
+  email?: string;
+  role: string;
+  phoneNumber?: string;
+}): Promise<string> => {
+  let user;
+  if (body.role === USER_ROLES.HIRER) {
+    user = await userService.getUserByEmail(body.email as string);
   }
+  if (body.role === USER_ROLES.USER) {
+    user = await userService.getUserByPhone(body.phoneNumber as string);
+  }
+
+  if (!user) {
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Could not find user with that email');
+  }
+
   const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes');
   const resetPasswordToken = generateToken(user.id, expires, tokenTypes.RESET_PASSWORD);
   await saveToken(resetPasswordToken, user.id, expires, tokenTypes.RESET_PASSWORD);
   return resetPasswordToken;
+
+  // const user = await userService.getUserByEmail(email);
+  // if (!user) {
+  //   throw new ApiError(httpStatus.NO_CONTENT, 'Could not find user with that email');
+  // }
+  // const expires = moment().add(config.jwt.resetPasswordExpirationMinutes, 'minutes');
+  // const resetPasswordToken = generateToken(user.id, expires, tokenTypes.RESET_PASSWORD);
+  // await saveToken(resetPasswordToken, user.id, expires, tokenTypes.RESET_PASSWORD);
+  // return resetPasswordToken;
 };
 
 /**

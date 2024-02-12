@@ -4,7 +4,7 @@ import { QueryResult } from '../../plugin/paginate';
 export interface IUser {
   firstName: string;
   lastName: string;
-  email: string;
+  email?: string;
   password: string;
   phoneNumber?: string;
   role: string;
@@ -18,6 +18,10 @@ export interface IUserDoc extends IUser, Document {
 
 export interface IUserModel extends Model<IUserDoc> {
   isEmailTaken(email: string, excludeUserId?: mongoose.Types.ObjectId): Promise<boolean>;
+  isPhoneNumberTaken(
+    phoneNumber: string,
+    excludeUserId?: mongoose.Types.ObjectId
+  ): Promise<boolean>;
   paginate(filter: Record<string, any>, options: Record<string, any>): Promise<QueryResult>;
 }
 

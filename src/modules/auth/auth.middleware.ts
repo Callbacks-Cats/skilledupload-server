@@ -9,6 +9,9 @@ import { IUserDoc } from '../user/user.interface';
 const verifyCallback =
   (req: Request, resolve: any, reject: any, requiredRights: string[]) =>
   async (err: Error, user: IUserDoc, info: string) => {
+    console.log('error --> ', err);
+    console.log('user --> ', user);
+    console.log('info --> ', info);
     if (err || info || !user) {
       return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'));
     }

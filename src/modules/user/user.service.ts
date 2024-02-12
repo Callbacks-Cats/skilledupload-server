@@ -1,5 +1,6 @@
 import httpStatus from 'http-status';
 import mongoose, { Types } from 'mongoose';
+import { USER_ROLES } from '../../constants';
 import { ApiError } from '../../utils';
 import { IUserDoc, NewCreatedUser, UpdateUserBody } from './user.interface';
 import User from './user.model';
@@ -10,7 +11,7 @@ import User from './user.model';
  * @returns {Promise<IUserDoc>}
  */
 export const createUser = async (userBody: NewCreatedUser): Promise<IUserDoc> => {
-  if (await User.isEmailTaken(userBody.email)) {
+  if (await User.isEmailTaken(userBody?.email as string)) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
   return User.create(userBody);
@@ -22,8 +23,16 @@ export const createUser = async (userBody: NewCreatedUser): Promise<IUserDoc> =>
  * @returns {Promise<IUserDoc>}
  */
 export const registerUser = async (userBody: NewCreatedUser): Promise<IUserDoc> => {
-  if (await User.isEmailTaken(userBody.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+  // if  user body has phone number or email then check that already have an user based on phoneNumber and email
+
+  if (userBody?.role === USER_ROLES.HIRER) {
+    if (await User.isEmailTaken(userBody?.email as string)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
+    }
+  } else if (userBody?.role === USER_ROLES.USER) {
+    if (await User.isPhoneNumberTaken(userBody?.phoneNumber as string)) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Phone number already taken');
+    }
   }
   return User.create(userBody);
 };
@@ -43,6 +52,14 @@ export const getUserById = async (id: mongoose.Types.ObjectId): Promise<IUserDoc
  */
 export const getUserByEmail = async (email: string): Promise<IUserDoc | null> =>
   User.findOne({ email });
+
+/**
+ * Get user by phone number
+ * @param {string} phoneNumber
+ * @returns {Promise<IUserDoc | null>}
+ */
+export const getUserByPhone = async (phoneNumber: string): Promise<IUserDoc | null> =>
+  User.findOne({ phoneNumber });
 
 /**
  * Update user by id

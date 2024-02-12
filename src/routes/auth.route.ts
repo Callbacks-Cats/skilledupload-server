@@ -18,6 +18,7 @@ router.post(
   authController.resetPassword
 );
 router.post('/verify-email', validate(authValidation.verifyEmail), authController.verifyEmail);
+router.post('/verify-otp', validate(authValidation.verifyOtp), authController.verfiyOtp);
 
 export default router;
 
@@ -238,4 +239,39 @@ export default router;
  *               data: null
  *               code: 401
  *               error: verify email failed
+ */
+
+/**
+ * @swagger
+ * /auth/verify-otp:
+ *   post:
+ *     summary: Verify OTP
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               otp:
+ *                 type: string
+ *                 minLength: 4
+ *                 maxLength: 4
+ *             required:
+ *               - otp
+ *     responses:
+ *       '204':
+ *         description: OTP verification successful
+ *       '401':
+ *         description: OTP verification failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               success: false
+ *               data: null
+ *               code: 401
+ *               error: OTP verification failed
  */
