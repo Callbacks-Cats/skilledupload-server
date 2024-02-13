@@ -10,5 +10,11 @@ export const createApplicant = catchAsync(async (req: Request, res: Response) =>
 });
 
 export const updateApplicant = catchAsync(async (req: Request, res: Response) => {
-  return SendResponse(res, true, {}, httpStatus.OK, 'Applicant updated successfully');
+  const applicant = await applicantService.udpateApplicantByUserId(req.params.userId, req.body);
+  return SendResponse(res, true, applicant, httpStatus.OK, 'Applicant updated successfully');
+});
+
+export const getApplicant = catchAsync(async (req: Request, res: Response) => {
+  const applicant = await applicantService.getApplicantByUserId(req.params.userId);
+  return SendResponse(res, true, applicant, httpStatus.OK, 'Applicant fetched successfully');
 });

@@ -26,4 +26,11 @@ router.patch(
   applicantController.updateApplicant
 );
 
+router.get(
+  '/:userId',
+  auth('manageApplicant'),
+  validate(applicationValidation.getApplicantByUserId),
+  applicantController.getApplicant
+);
+
 export default router;

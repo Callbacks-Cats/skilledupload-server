@@ -1,4 +1,4 @@
-import { Model, ObjectId } from 'mongoose';
+import { Document, Model, ObjectId } from 'mongoose';
 import { QueryResult } from '../../plugin/paginate';
 
 export interface IApplicant {
@@ -16,8 +16,8 @@ export interface IApplicant {
   }[];
   experience?: {
     title: string;
-    company: string;
-    location: string;
+    company?: string;
+    location?: string;
     startDate: Date;
     endDate: Date;
     description?: string;
