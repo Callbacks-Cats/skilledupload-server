@@ -18,11 +18,8 @@ export const createApplicant = async (applicantBody: IApplicantBody): Promise<IA
  * @returns {Promise<IApplicantDoc>}
  */
 export const getApplicantByUserId = async (userId: string): Promise<IApplicantDoc | null> => {
-  return await Applicant.findOne({
-    user: userId
-  }).populate('user');
+  return await Applicant.findOne({ user: userId }).populate('user');
 };
-
 /**
  * Update applicant by userId
  * @param {string} userId

@@ -1,7 +1,9 @@
 import { Schema, Types, model } from 'mongoose';
+import paginate from '../../plugin/paginate';
+import { toJSON } from '../../plugin/toJSON';
 import { IApplicantDoc, IApplicantModel } from './applicant.interface';
 
-const applicationSchema = new Schema<IApplicantDoc, IApplicantModel>(
+const applicantSchema = new Schema<IApplicantDoc, IApplicantModel>(
   {
     user: {
       type: Types.ObjectId,
@@ -73,13 +75,17 @@ const applicationSchema = new Schema<IApplicantDoc, IApplicantModel>(
   { timestamps: true }
 );
 
+// Plugin
+applicantSchema.plugin(toJSON);
+applicantSchema.plugin(paginate);
+
 /**
  * @name isProfileComplete
  * @description Check if the user has completed their profile
  * @param {string} userId - The user id
  * @returns {boolean} - True if the user has completed their profile
  */
-applicationSchema.statics.isProfileComplete = async function (userId: string): Promise<boolean> {
+applicantSchema.statics.isProfileComplete = async function (userId: string): Promise<boolean> {
   const applicant = await this.findOne({ user: userId });
   if (!applicant) {
     return false;
@@ -96,5 +102,5 @@ applicationSchema.statics.isProfileComplete = async function (userId: string): P
   return true;
 };
 
-const Applicant = model<IApplicantDoc, IApplicantModel>('Applicant', applicationSchema);
+const Applicant = model<IApplicantDoc, IApplicantModel>('Applicant', applicantSchema);
 export default Applicant;

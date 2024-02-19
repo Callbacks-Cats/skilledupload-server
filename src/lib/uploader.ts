@@ -13,7 +13,7 @@ let validateImage = function (file: any, cb: any) {
   }
 };
 export const imageUploader = multer({
-  storage: storage,
+  storage: multer.memoryStorage(),
   fileFilter: function (req, file, callback) {
     validateImage(file, callback);
   }

@@ -82,3 +82,25 @@ export const updateUserById = async (
   await user.save();
   return user;
 };
+
+/**
+ * Update profile picture
+ * @param {mongoose.Types.ObjectId} userId
+ * @param {Buffer} profilePicture
+ * @returns {Promise<IUserDoc | null>}
+ */
+export const updateProfilePicture = async (
+  userId: mongoose.Types.ObjectId,
+  profilePicture: Buffer
+): Promise<IUserDoc | null> => {
+  let user = await getUserById(userId);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  // TODO-1: If there is a profile picture already, delete it from the digital ocean space.
+  // TODO-2: Upload the new profile picture to the digital ocean space and get the URL.
+  // TODO-3: Update the user's profile picture URL in the database.
+
+  return user;
+};
