@@ -24,3 +24,5 @@ export const getUserById = {
     userId: Joi.string().required().custom(objectId)
   })
 };
+
+// TODO: update user profile picture validation. Payload will be a form data

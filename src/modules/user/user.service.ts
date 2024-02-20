@@ -1,6 +1,8 @@
 import httpStatus from 'http-status';
 import mongoose, { Types } from 'mongoose';
 import { USER_ROLES } from '../../constants';
+import { resizeImage } from '../../lib/media.manipulation';
+import { addFileToSpace } from '../../lib/space';
 import { ApiError } from '../../utils';
 import { IUserDoc, NewCreatedUser, UpdateUserBody } from './user.interface';
 import User from './user.model';
@@ -97,10 +99,23 @@ export const updateProfilePicture = async (
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
+  // TODO-1: Resize the profile picture to 500x500 pixels using the `resizeImage` function from `media.manipulation.ts` & rename the file based on the user's id.
+  const fileName = `${userId}.jpg`;
+  const resizedImage = await resizeImage(profilePicture, { width: 250, height: 250 });
 
-  // TODO-1: If there is a profile picture already, delete it from the digital ocean space.
-  // TODO-2: Upload the new profile picture to the digital ocean space and get the URL.
-  // TODO-3: Update the user's profile picture URL in the database.
+  // TODO-2: If there is a profile picture already, delete it from the digital ocean space.
+  const uploadedImage = await addFileToSpace(
+    'image',
+    resizedImage,
+    fileName,
+    'profile-pictures',
+    'image/jpeg'
+  );
+  if (uploadedImage) {
+    // TODO-3: Upload the new profile picture to the digital ocean space and get the URL.
+    // TODO-4: Update the user's profile picture URL in the database.
+    user = await updateUserById(userId.toString(), { profilePicture: uploadedImage.url });
+  }
 
   return user;
 };
