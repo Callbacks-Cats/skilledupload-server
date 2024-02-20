@@ -17,3 +17,21 @@ export const TOKEN_TYPES = {
   RESET_PASSWORD: 'resetPassword',
   VERIFY_EMAIL: 'verifyEmail'
 };
+
+export const FILE_TYPES = {
+  IMAGE: 'image',
+  VIDEO: 'video',
+  FILE: 'file'
+};
+
+export const SPACE_FOLDERS = {
+  PROFILE_PICTURE: 'profile-pictures',
+  RESUME: 'resumes',
+  VIDEO_RESUME: 'video-resumes'
+};
+
+export const CONTENT_TYPES = {
+  IMAGE: 'image/jpeg',
+  VIDEO: 'video/mp4',
+  FILE: 'application/pdf'
+};
