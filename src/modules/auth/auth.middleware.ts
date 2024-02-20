@@ -3,6 +3,7 @@ import httpStatus from 'http-status';
 import passport from 'passport';
 
 import { roleRights } from '../../config/roles';
+import { USER_STATUSES } from '../../constants';
 import { ApiError } from '../../utils';
 import { IUserDoc } from '../user/user.interface';
 
@@ -11,6 +12,11 @@ const verifyCallback =
   async (err: Error, user: IUserDoc, info: string) => {
     if (err || info || !user) {
       return reject(new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate'));
+    }
+    if (user?.status !== USER_STATUSES.ACTIVE) {
+      return reject(
+        new ApiError(httpStatus.UNAUTHORIZED, 'Your account is not active. Please contact admin.')
+      );
     }
     req.user = user;
 
