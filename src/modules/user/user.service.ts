@@ -1,6 +1,8 @@
 import httpStatus from 'http-status';
 import mongoose, { Types } from 'mongoose';
-import { USER_ROLES } from '../../constants';
+import { CONTENT_TYPES, FILE_TYPES, SPACE_FOLDERS, USER_ROLES } from '../../constants';
+import { updateFileInSpace } from '../../lib';
+import { resizeImage } from '../../lib/media.manipulation';
 import { ApiError } from '../../utils';
 import { IUserDoc, NewCreatedUser, UpdateUserBody } from './user.interface';
 import User from './user.model';
@@ -69,16 +71,67 @@ export const getUserByPhone = async (phoneNumber: string): Promise<IUserDoc | nu
  */
 export const updateUserById = async (
   userId: string,
-  updateBody: UpdateUserBody
+  updateBody: UpdateUserBody,
+  options?: { session?: mongoose.ClientSession }
 ): Promise<IUserDoc | null> => {
-  const user = await getUserById(new mongoose.Types.ObjectId(userId));
+  let user = await getUserById(new mongoose.Types.ObjectId(userId));
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
   if (updateBody.email && (await User.isEmailTaken(updateBody.email, new Types.ObjectId(userId)))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
-  Object.assign(user, updateBody);
-  await user.save();
+  user = await User.findByIdAndUpdate(userId, updateBody, {
+    new: true,
+    runValidators: true,
+    session: options?.session
+  });
   return user;
+};
+
+/**
+ * Update profile picture
+ * @param {mongoose.Types.ObjectId} userId
+ * @param {Buffer} profilePicture
+ * @returns {Promise<IUserDoc | null>}
+ */
+export const updateProfilePicture = async (
+  userId: mongoose.Types.ObjectId,
+  profilePicture: Buffer
+): Promise<IUserDoc | null> => {
+  let user = await getUserById(userId);
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+  const fileName = `${userId}.jpg`;
+  const resizedImage = await resizeImage(profilePicture, { width: 250, height: 250 });
+
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+    const uploadedImage = await updateFileInSpace(
+      FILE_TYPES.IMAGE,
+      resizedImage,
+      fileName,
+      SPACE_FOLDERS.PROFILE_PICTURE,
+      CONTENT_TYPES.IMAGE
+    );
+    if (uploadedImage) {
+      user = await updateUserById(
+        userId.toString(),
+        { profilePicture: uploadedImage.url },
+        { session }
+      );
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return user;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
 };

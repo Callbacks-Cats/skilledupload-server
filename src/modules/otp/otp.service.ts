@@ -1,3 +1,4 @@
+import { randomInt } from 'crypto';
 import httpStatus from 'http-status';
 import { ApiError } from '../../utils';
 import { IOtpDoc } from './otp.interfaces';
@@ -8,7 +9,7 @@ import Otp from './otp.model';
  * @returns {string}
  */
 export const getOtp = async () => {
-  const otp = Math.floor(1000 + Math.random() * 9000).toString();
+  const otp = randomInt(1000, 9999).toString();
   return otp;
 };
 

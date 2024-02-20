@@ -3,6 +3,7 @@ import httpStatus from 'http-status';
 import { USER_ROLES } from '../../constants';
 import { catchAsync, logger } from '../../utils';
 import { SendResponse } from '../../utils/SendRespnse';
+import { applicantService } from '../applicant';
 import { emailService } from '../email';
 import { tokenService } from '../token';
 import { userService } from '../user';
@@ -24,6 +25,9 @@ export const register = catchAsync(async (req: Request, res: Response) => {
       `${user?.firstName} ${user?.lastName}`
     );
   } else if (user.role === USER_ROLES.USER) {
+    // creating the job seeker profile
+    await applicantService.createApplicant({ user: user.id });
+
     // TODO: this should be sent via task queue & sms service. [Right now we are using email service for testing purpose.]
     // const otp = await otpService.generateOtp(user.id);
     // await emailService.sendVerificationEmail(

@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import config from '../config';
+import applicantRoute from './applicant.route';
 import authRoutes from './auth.route';
 import docsRoutes from './docs.routes';
 import userRoutes from './user.route';
@@ -25,6 +26,10 @@ const devIRoute: IRoute[] = [
   {
     path: '/auth',
     router: authRoutes
+  },
+  {
+    path: '/applicant',
+    router: applicantRoute
   }
 ];
 
