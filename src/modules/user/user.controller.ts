@@ -23,12 +23,6 @@ export const getUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const updateUpdateProfilePicture = catchAsync(async (req: Request, res: Response) => {
-  // const resizedImage = await resizeImage(req.file?.buffer as Buffer, { width: 500, height: 500 });
-
-  // const filename = 'resized_image.jpg'; // Adjust filename and extension as needed
-  // const filePath = path.join(__dirname, 'uploads', filename); // Specify save location
-  // await fs.promises.writeFile(filePath, resizedImage);
-
   const user = await userService.updateProfilePicture(
     (req.user as IUserDoc)?.id,
     req.file?.buffer as Buffer

@@ -1,4 +1,5 @@
 import { Schema, Types, model } from 'mongoose';
+import { RESUME_STATUS } from '../../constants';
 import paginate from '../../plugin/paginate';
 import { toJSON } from '../../plugin/toJSON';
 import { IApplicantDoc, IApplicantModel } from './applicant.interface';
@@ -11,7 +12,17 @@ const applicantSchema = new Schema<IApplicantDoc, IApplicantModel>(
       required: true
     },
     resume: {
-      type: [String]
+      file: {
+        type: String
+      },
+      status: {
+        type: String,
+        enum: Object.values(RESUME_STATUS),
+        default: RESUME_STATUS.PENDING
+      },
+      date: {
+        type: Date
+      }
     },
     intro: {
       type: String

@@ -1,4 +1,5 @@
 import express, { Router } from 'express';
+import { fileUploader } from '../lib';
 import {
   applicantController,
   applicantMiddleware,
@@ -16,6 +17,13 @@ router.post(
   validate(applicationValidation.createApplicant),
   applicantMiddleware.isUserRole,
   applicantController.createApplicant
+);
+
+router.patch(
+  '/upload-resume',
+  auth('uploadResume'),
+  fileUploader.single('resume'),
+  applicantController.uploadResume
 );
 
 router.patch(

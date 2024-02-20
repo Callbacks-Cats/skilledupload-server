@@ -18,6 +18,12 @@ export const TOKEN_TYPES = {
   VERIFY_EMAIL: 'verifyEmail'
 };
 
+export const RESUME_STATUS = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected'
+};
+
 export const FILE_TYPES = {
   IMAGE: 'image',
   VIDEO: 'video',

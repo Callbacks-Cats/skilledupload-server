@@ -3,7 +3,11 @@ import { QueryResult } from '../../plugin/paginate';
 
 export interface IApplicant {
   user: ObjectId;
-  resume?: string[];
+  resume?: {
+    file?: string;
+    status: string;
+    date: Date;
+  };
   intro?: string;
   skills?: string[];
   videoResume?: string[];

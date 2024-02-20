@@ -72,3 +72,27 @@ export const updateApplicant = {
       'object.min': 'At least one field is required'
     })
 };
+
+export const resumeSchema = Joi.object({
+  resume: Joi.object().custom((value: Express.Multer.File, helpers) => {
+    const allowedMimetypes: string[] = [
+      'image/jpeg',
+      'image/png',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'text/plain',
+      'text/csv'
+    ];
+
+    if (!value || !allowedMimetypes.includes(value.mimetype)) {
+      return helpers.error('any.invalid');
+    } else {
+      return value;
+    }
+  })
+});
