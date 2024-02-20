@@ -100,3 +100,11 @@ export const uploadResume = async (userId: string, file: Buffer): Promise<IAppli
   }
   return applicant;
 };
+
+/**
+ * Get resumes which are pending
+ * @returns {Promise<IApplicantDoc[]>}
+ */
+export const getPendingResumes = async (): Promise<IApplicantDoc[]> => {
+  return await Applicant.find({ 'resume.status': RESUME_STATUS.PENDING }).populate('user');
+};

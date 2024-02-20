@@ -22,12 +22,12 @@ const verifyCallback =
 
     if (requiredRights.length) {
       const userRights = roleRights.get(user.role);
-      if (!userRights) return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
+      if (!userRights) return reject(new ApiError(httpStatus.FORBIDDEN, 'You are not authorized'));
       const hasRequiredRights = requiredRights.every((requiredRight: string) =>
         userRights.includes(requiredRight)
       );
       if (!hasRequiredRights && req.params['userId'] !== user.id) {
-        return reject(new ApiError(httpStatus.FORBIDDEN, 'Forbidden'));
+        return reject(new ApiError(httpStatus.FORBIDDEN, 'Your permission is not enough'));
       }
     }
 

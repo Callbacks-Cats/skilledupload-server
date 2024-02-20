@@ -34,6 +34,8 @@ router.patch(
   applicantController.updateApplicant
 );
 
+router.get('/pending-resumes', auth('manageApplicant'), applicantController.getPendingResumes);
+
 router.get(
   '/:userId',
   auth('manageApplicant'),

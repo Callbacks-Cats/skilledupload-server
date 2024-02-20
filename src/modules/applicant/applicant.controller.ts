@@ -27,3 +27,8 @@ export const uploadResume = catchAsync(async (req: Request, res: Response) => {
   );
   return SendResponse(res, true, applicant, httpStatus.OK, 'Resume uploaded successfully');
 });
+
+export const getPendingResumes = catchAsync(async (req: Request, res: Response) => {
+  const applicants = await applicantService.getPendingResumes();
+  return SendResponse(res, true, applicants, httpStatus.OK, 'Pending resumes fetched successfully');
+});
