@@ -23,6 +23,7 @@ export const errorConverter = (err: any, _req: Request, res: Response, next: Nex
     const message: string = error.message || `${httpStatus[statusCode]}`;
     error = new ApiError(statusCode, message, false, err.stack);
   }
+  console.log('error --> ', error);
   next(error);
 };
 

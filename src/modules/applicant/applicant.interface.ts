@@ -3,29 +3,17 @@ import { QueryResult } from '../../plugin/paginate';
 
 export interface IApplicant {
   user: ObjectId;
-  resume?: {
-    file?: string;
-    status: string;
-    date: Date;
-  };
+  resume?: string;
   intro?: string;
   skills?: string[];
-  videoResume?: string[];
+  videoResume?: {
+    file: string;
+  }[];
   education?: {
-    school: string;
-    degree: string;
-    fieldOfStudy?: string;
-    startYear: number;
-    endYear: number;
-  }[];
-  experience?: {
     title: string;
-    company?: string;
-    location?: string;
-    startDate: Date;
-    endDate: Date;
-    description?: string;
-  }[];
+    year: string;
+  };
+  status: string;
 }
 
 export interface IApplicantDoc extends IApplicant, Document {}

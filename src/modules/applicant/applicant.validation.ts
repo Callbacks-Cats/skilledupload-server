@@ -37,12 +37,8 @@ export const createApplicant = {
 };
 
 export const updateApplicant = {
-  params: {
-    userId: Joi.string().required().custom(objectId)
-  },
   body: Joi.object()
     .keys({
-      user: Joi.string().required().custom(objectId),
       resume: Joi.array().items(Joi.string()).max(3),
       intro: Joi.string(),
       skills: Joi.array().items(Joi.string()),
@@ -67,7 +63,7 @@ export const updateApplicant = {
         })
       )
     })
-    .min(2)
+    .min(1)
     .messages({
       'object.min': 'At least one field is required'
     })
@@ -96,3 +92,15 @@ export const resumeSchema = Joi.object({
     }
   })
 });
+
+export const deleteVideoResume = {
+  params: {
+    resumeId: Joi.string().required().custom(objectId)
+  }
+};
+
+export const approverApplicantProfile = {
+  params: {
+    applicantId: Joi.string().required().custom(objectId)
+  }
+};
