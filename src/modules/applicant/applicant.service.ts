@@ -85,9 +85,7 @@ export const udpateApplicantByUserId = async (
   applicantBody: IApplicantBody,
   options?: { session?: mongoose.ClientSession }
 ): Promise<IApplicantDoc | null> => {
-  console.log('User id --> ', userId);
   let applicant = await getApplicantByUserId(userId);
-  console.log();
   if (!applicant) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Applicant not found');
   }
@@ -111,7 +109,8 @@ export const uploadResume = async (userId: string, file: Buffer): Promise<IAppli
     throw new ApiError(httpStatus.NOT_FOUND, 'Applicant not found');
   }
 
-  let fileName = `resume-${userId}.pdf`;
+  const currentTimestamp = new Date().getTime();
+  let fileName = `resume-${userId}-${currentTimestamp}.pdf`;
 
   const session = await Applicant.startSession();
 
@@ -128,6 +127,15 @@ export const uploadResume = async (userId: string, file: Buffer): Promise<IAppli
 
     // TODO-2: Save the file url to the applicant document
     if (updatedFile) {
+      // delete old file form space
+      if (applicant.resume) {
+        await deleteFileFromSpace(
+          FILE_TYPES.FILE,
+          applicant.resume.split('/').pop() as string,
+          SPACE_FOLDERS.RESUME
+        );
+      }
+
       const updatedApplicant = await udpateApplicantByUserId(
         userId,
         {
@@ -165,13 +173,17 @@ export const uploadVideoResume = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'Applicant not found');
   }
 
+  if (applicant.videoResume?.length === 3) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'You can only upload a maximum of 3 video resumes');
+  }
+
   // TODO-2: Save the file url to the applicant document
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
 
-    let fileName = `video-${userId}.mp4`;
-    // let videoResumeId = new mongoose.Types.ObjectId().toHexString();
+    let uniqueId = new mongoose.Types.ObjectId().toHexString();
+    let fileName = `video-${userId}-${uniqueId}.mp4`;
 
     // TODO-1: Upload file to the Digital Ocean Space
     const uploadedFile = await updateFileInSpace(
@@ -221,27 +233,42 @@ export const deleteVideoResumeByUser = async (
   // get the video resume by id
   let applicant = await getApplicantByUserId(userId);
 
-  const session = await mongoose.startSession();
+  if (!applicant) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Applicant not found');
+  }
 
+  const videoResume = applicant?.videoResume?.find(
+    (video: any) => video?._id?.toString() === videoResumeId
+  );
+
+  if (!videoResume) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Video resume not found');
+  }
+
+  const session = await mongoose.startSession();
   try {
     session.startTransaction();
     const deletedFile = await deleteFileFromSpace(
       FILE_TYPES.VIDEO,
-      'video-65d756da6b1e42e0f7ed6384.mp4',
+      videoResume?.file?.split('/').pop() as string,
       SPACE_FOLDERS.VIDEO_RESUME
     );
-
-    applicant = await udpateApplicantByUserId(
-      userId,
-      {
-        $pull: {
-          videoResume: {
-            _id: videoResumeId
+    if (deletedFile) {
+      applicant = await udpateApplicantByUserId(
+        userId,
+        {
+          $pull: {
+            videoResume: {
+              _id: videoResumeId
+            }
           }
-        }
-      } as Partial<IApplicantDoc>,
-      { session }
-    );
+        } as Partial<IApplicantDoc>,
+        { session }
+      );
+      await session.commitTransaction();
+      session.endSession();
+      return (applicant as IApplicantDoc).populate('user');
+    }
     return (applicant as IApplicantDoc).populate('user');
   } catch (error) {
     session.abortTransaction();
