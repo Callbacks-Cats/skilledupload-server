@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { catchAsync } from '../../utils';
+import { ApiError, catchAsync } from '../../utils';
 import { SendResponse } from '../../utils/SendRespnse';
 import { IUserDoc } from '../user/user.interface';
 import { IApplicantDoc } from './applicant.interface';
@@ -25,6 +25,12 @@ export const getApplicant = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const uploadResume = catchAsync(async (req: Request, res: Response) => {
+  console.log(req.file, 'req.file');
+
+  if (!req?.file) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Please upload a resume');
+  }
+
   const applicant = await applicantService.uploadResume(
     (req.user as IUserDoc)?.id,
     req?.file?.buffer as Buffer

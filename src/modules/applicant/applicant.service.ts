@@ -1,5 +1,5 @@
 import httpStatus from 'http-status';
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { CONTENT_TYPES, FILE_TYPES, RESUME_STATUS, SPACE_FOLDERS } from '../../constants';
 import { deleteFileFromSpace, updateFileInSpace } from '../../lib';
 import { ApiError } from '../../utils';
@@ -20,8 +20,49 @@ export const createApplicant = async (applicantBody: IApplicantBody): Promise<IA
  * @param {string} userId
  * @returns {Promise<IApplicantDoc>}
  */
+// export const getApplicantByUserId = async (userId: string): Promise<IApplicantDoc | null> => {
+//   return await Applicant.findOne({ user: userId }).populate('user');
+// };
 export const getApplicantByUserId = async (userId: string): Promise<IApplicantDoc | null> => {
-  return await Applicant.findOne({ user: userId }).populate('user');
+  const pipeline = [
+    {
+      $match: {
+        user: new Types.ObjectId(userId) // Assuming userId is of type ObjectId
+      }
+    },
+    {
+      $lookup: {
+        from: 'users', // Assuming the name of the user collection is "users"
+        localField: 'user',
+        foreignField: '_id',
+        as: 'user'
+      }
+    },
+    {
+      $unwind: '$user'
+    },
+    {
+      $replaceRoot: {
+        newRoot: {
+          $mergeObjects: ['$user', '$$ROOT']
+        }
+      }
+    },
+    {
+      $project: {
+        user: 0 // Exclude the embedded user object
+      }
+    }
+  ];
+
+  const result = await Applicant.aggregate(pipeline);
+
+  if (result.length === 0) {
+    return null;
+  }
+
+  // If there is a match, return the first document (assuming only one match)
+  return result[0];
 };
 
 /**
