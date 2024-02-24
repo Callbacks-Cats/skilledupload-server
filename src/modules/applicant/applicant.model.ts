@@ -17,9 +17,17 @@ const applicantSchema = new Schema<IApplicantDoc, IApplicantModel>(
     intro: {
       type: String
     },
-    skills: {
-      type: [String]
-    },
+    skills: [
+      {
+        jobCategory: {
+          type: Types.ObjectId,
+          ref: 'JobCategory'
+        },
+        yearsOfExperience: {
+          type: Number
+        }
+      }
+    ],
     videoResume: [
       {
         file: {

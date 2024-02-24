@@ -5,7 +5,10 @@ export interface IApplicant {
   user: ObjectId;
   resume?: string;
   intro?: string;
-  skills?: string[];
+  skills?: {
+    jobCategory: ObjectId;
+    yearsOfExperience: number;
+  }[];
   videoResume?: {
     file: string;
   }[];

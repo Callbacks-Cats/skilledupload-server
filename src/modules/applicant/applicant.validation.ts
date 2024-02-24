@@ -41,27 +41,18 @@ export const updateApplicant = {
     .keys({
       resume: Joi.array().items(Joi.string()).max(3),
       intro: Joi.string(),
-      skills: Joi.array().items(Joi.string()),
-      videoResume: Joi.array().items(Joi.string()).max(3),
-      education: Joi.array().items(
+      // skills: Joi.array().items(Joi.string()),
+      skills: Joi.array().items(
         Joi.object({
-          school: Joi.string().required(),
-          degree: Joi.string().required(),
-          fieldOfStudy: Joi.string(),
-          startYear: Joi.number().required(),
-          endYear: Joi.number().required()
+          jobCategory: Joi.string().required().custom(objectId),
+          yearsOfExperience: Joi.number().required()
         })
       ),
-      experience: Joi.array().items(
-        Joi.object({
-          title: Joi.string().required(),
-          company: Joi.string(),
-          location: Joi.string(),
-          startDate: Joi.date().required(),
-          endDate: Joi.date().required(),
-          description: Joi.string()
-        })
-      )
+      videoResume: Joi.array().items(Joi.string()).max(3),
+      education: Joi.object({
+        title: Joi.string().required(),
+        year: Joi.number().required()
+      })
     })
     .min(1)
     .messages({
