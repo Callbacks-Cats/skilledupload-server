@@ -87,4 +87,27 @@ export const updateFileInSpace = async (
   }
 };
 
+/**
+ * Deletes a file from DigitalOcean Spaces.
+ * @param type The type of file ('image', 'file', or 'video').
+ * @param filename The name of the file.
+ * @param folder The folder within the DigitalOcean Space to upload the file to.
+ * @returns A success flag.
+ */
+export const deleteFileFromSpace = async (type: string, filename: string, folder: string) => {
+  const bucket = type === 'image' ? 'images' : type === 'file' ? 'files' : 'videos';
+
+  const params = {
+    Bucket: bucket,
+    Key: `${folder}/${filename}`
+  };
+
+  try {
+    await spaces.deleteObject(params);
+    return true;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export default spaces;

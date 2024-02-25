@@ -13,7 +13,7 @@ const router: Router = express.Router();
 // test route
 router.post(
   '/',
-  auth('manageApplicant'),
+  auth('updateOwn'),
   validate(applicationValidation.createApplicant),
   applicantMiddleware.isUserRole,
   applicantController.createApplicant
@@ -27,14 +27,35 @@ router.patch(
 );
 
 router.patch(
-  '/:userId',
-  auth('manageApplicant'),
+  '/upload-video-resume',
+  auth('uploadResume'),
+  applicantMiddleware.isVideoResumeLimitExceeded,
+  fileUploader.single('video'),
+  applicantController.uploadVideoResume
+);
+
+router.patch(
+  '/approve-applicant-profile/:applicantId',
+  validate(applicationValidation.approverApplicantProfile),
+  auth('updateOwn'), // it will be manageApplicant
+  applicantController.approveApplicantProfile
+);
+
+router.delete(
+  '/delete-video-resume/:resumeId',
+  validate(applicationValidation.deleteVideoResume),
+  auth('updateOwn'),
+  applicantMiddleware.isUserRole,
+  applicantController.deleteVideoResumeByUser
+);
+
+router.patch(
+  '/update-my-profile',
+  auth('updateOwn'),
   applicantMiddleware.isUserRole,
   validate(applicationValidation.updateApplicant),
   applicantController.updateApplicant
 );
-
-router.get('/pending-resumes', auth('manageApplicant'), applicantController.getPendingResumes);
 
 router.get(
   '/:userId',

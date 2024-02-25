@@ -12,76 +12,48 @@ const applicantSchema = new Schema<IApplicantDoc, IApplicantModel>(
       required: true
     },
     resume: {
-      file: {
-        type: String
-      },
-      status: {
-        type: String,
-        enum: Object.values(RESUME_STATUS),
-        default: RESUME_STATUS.PENDING
-      },
-      date: {
-        type: Date
-      }
+      type: String
     },
     intro: {
       type: String
     },
-    skills: {
-      type: [String]
-    },
-    videoResume: {
-      type: [String],
-      maxlength: 3
-    },
-    education: [
+    skills: [
       {
-        school: {
-          type: String,
-          required: true
+        jobCategory: {
+          type: Types.ObjectId,
+          ref: 'JobCategory'
         },
-        degree: {
-          type: String,
-          required: true
-        },
-        fieldOfStudy: {
-          type: String
-        },
-        startYear: {
-          type: Number,
-          required: true
-        },
-        endYear: {
-          type: Number,
-          required: true
+        yearsOfExperience: {
+          type: Number
         }
       }
     ],
-    experience: [
+    videoResume: [
       {
-        title: {
+        file: {
           type: String,
-          required: true
-        },
-        company: {
-          type: String
-        },
-        location: {
-          type: String
-        },
-        startDate: {
-          type: Date,
-          required: true
-        },
-        endDate: {
-          type: Date,
-          required: true
-        },
-        description: {
-          type: String
+          validate: {
+            validator: function (v: string) {
+              return /^(http|https):\/\/[^ "]+$/.test(v);
+            },
+            message: (props) => `${props.value} is not a valid URL!`
+          }
         }
       }
-    ]
+    ],
+    education: {
+      title: {
+        type: String
+      },
+      year: {
+        type: String
+      }
+    },
+    status: {
+      type: String,
+      enum: Object.values(RESUME_STATUS),
+      default: RESUME_STATUS.PENDING
+    }
   },
   { timestamps: true }
 );
@@ -101,17 +73,13 @@ applicantSchema.statics.isProfileComplete = async function (userId: string): Pro
   if (!applicant) {
     return false;
   }
-  if (
-    !applicant.intro ||
-    !applicant.education ||
-    applicant.education.length === 0 ||
-    !applicant.experience ||
-    applicant.experience.length === 0
-  ) {
+
+  if (!applicant.resume || !applicant.intro || !applicant.skills || !applicant.education) {
     return false;
   }
+
   return true;
 };
-
 const Applicant = model<IApplicantDoc, IApplicantModel>('Applicant', applicantSchema);
+
 export default Applicant;

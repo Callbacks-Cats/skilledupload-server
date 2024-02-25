@@ -20,16 +20,17 @@ import tokenTypes from './token.types';
  * @returns {string}
  */
 export const generateToken = (
-  userId: mongoose.Types.ObjectId,
+  user: IUserDoc,
   expires: Moment,
   type: string,
   secret: string = config.jwt.secret
 ): string => {
-  const payload = {
-    sub: userId,
+  const payload: any = {
+    sub: user.id,
     iat: moment().unix(),
     exp: expires.unix(),
-    type
+    type,
+    role: user.role
   };
   return jwt.sign(payload, secret);
 };
@@ -90,7 +91,7 @@ export const verifyToken = async (token: string, type: string): Promise<ITokenDo
  */
 export const generateAuthTokens = async (user: IUserDoc): Promise<string> => {
   const accessTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
-  const accessToken = generateToken(user.id, accessTokenExpires, tokenTypes.ACCESS);
+  const accessToken = generateToken(user, accessTokenExpires, tokenTypes.ACCESS);
   await saveToken(accessToken, user.id, accessTokenExpires, tokenTypes.ACCESS);
   return accessToken;
 };

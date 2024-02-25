@@ -1,6 +1,7 @@
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
+// import fileUploader from 'express-fileupload';
 import helmet from 'helmet';
 import httpStatus from 'http-status';
 import passport from 'passport';
@@ -24,11 +25,17 @@ if (config.env !== 'test') {
 app.use(helmet());
 
 // parse json request body
-app.use(express.json());
+app.use(express.json({ limit: '3000mb' }));
 
 // parse urlencoded request body
 app.use(express.urlencoded({ extended: true }));
-app.use(express.text({ limit: '50mb' }));
+app.use(express.text({ limit: '300mb' }));
+// app.use(
+//   fileUploader({
+//     useTempFiles: true,
+//     tempFileDir: '/tmp/uploads' // Adjust if needed
+//   })
+// );
 
 // sanitize request data
 app.use(xss());
@@ -55,9 +62,6 @@ passport.use('jwt', jwtStrategy);
 if (config.env === 'production') {
   app.use('/api/v1/auth', authLimiter);
 }
-
-// serve static files
-app.use('/uploads', express.static('uploads'));
 
 // v1 api routes
 app.use('/api/v1', routes);
