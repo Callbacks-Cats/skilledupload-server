@@ -25,7 +25,7 @@ export const getApplicantByUserId = async (userId: string): Promise<any> => {
   const user = await userService.getUserById(new Types.ObjectId(userId));
   const applicant = await Applicant.findOne({ user: userId }).populate({
     path: 'skills.jobCategory',
-    select: 'name'
+    select: 'name _id'
   });
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
@@ -45,7 +45,11 @@ export const getApplicantByUserId = async (userId: string): Promise<any> => {
     intro: applicant?.intro,
     skills: applicant?.skills?.map((skill: any) => {
       // @ts-ignore
-      return { name: skill?.jobCategory?.name, yearsOfExperience: skill?.yearsOfExperience };
+      return {
+        name: skill?.jobCategory?.name,
+        yearsOfExperience: skill?.yearsOfExperience,
+        id: skill?.jobCategory?._id
+      };
     }),
     videoResume: applicant?.videoResume,
     education: applicant?.education
