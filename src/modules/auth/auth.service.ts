@@ -76,6 +76,7 @@ export const verifyEmail = async (verifyEmailToken: string): Promise<IUserDoc | 
       verifyEmailToken,
       tokenTypes.VERIFY_EMAIL
     );
+    console.log('verifyEmailTokenDoc', verifyEmailTokenDoc);
     const user = await getUserById(new Types.ObjectId(verifyEmailTokenDoc.user));
     if (!user) {
       throw new ApiError(httpStatus.NOT_FOUND, 'No user found with this token');
