@@ -2,9 +2,11 @@ import httpStatus from 'http-status';
 import { Types } from 'mongoose';
 import { USER_STATUSES } from '../../constants';
 import { ApiError } from '../../utils';
+import { otpService } from '../otp';
+import Otp from '../otp/otp.model';
 import { Token, tokenService, tokenTypes } from '../token';
 import { IUserDoc } from '../user/user.interface';
-import { getUserByEmail, getUserById, updateUserById } from '../user/user.service';
+import { getUserByEmail, getUserById, getUserByPhone, updateUserById } from '../user/user.service';
 
 /**
  * Login with username and password
@@ -19,6 +21,23 @@ export const loginUserWithEmailAndPassword = async (
   const user = await getUserByEmail(email);
   if (!user || !(await user.isPasswordMatch(password))) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect email or password');
+  }
+  return user;
+};
+
+/**
+ * Login with phone number and password
+ * @param {string} phoneNumber
+ * @param {string} password
+ * @returns {Promise<IUserDoc>}
+ */
+export const loginUserWithPhoneNumber = async (
+  phoneNumber: string,
+  password: string
+): Promise<IUserDoc> => {
+  const user = await getUserByPhone(phoneNumber);
+  if (!user || !(await user.isPasswordMatch(password))) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect phone number or password');
   }
   return user;
 };
@@ -57,6 +76,7 @@ export const verifyEmail = async (verifyEmailToken: string): Promise<IUserDoc | 
       verifyEmailToken,
       tokenTypes.VERIFY_EMAIL
     );
+    console.log('verifyEmailTokenDoc', verifyEmailTokenDoc);
     const user = await getUserById(new Types.ObjectId(verifyEmailTokenDoc.user));
     if (!user) {
       throw new ApiError(httpStatus.NOT_FOUND, 'No user found with this token');
@@ -67,4 +87,20 @@ export const verifyEmail = async (verifyEmailToken: string): Promise<IUserDoc | 
   } catch (error) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Email verification failed');
   }
+};
+
+/**
+ * Verify otp
+ * @param {string} otp
+ * @returns {Promise<IUserDoc | null>}
+ */
+export const verifyOtp = async (otp: string): Promise<IUserDoc | null> => {
+  const otpDoc = await otpService.verifyOtp(otp);
+  const user = await getUserById(new Types.ObjectId(otpDoc.user));
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'No user found with this otp');
+  }
+  const updatedUser = await updateUserById(user.id, { status: USER_STATUSES.ACTIVE });
+  await Otp.deleteMany({ user: user.id });
+  return updatedUser;
 };

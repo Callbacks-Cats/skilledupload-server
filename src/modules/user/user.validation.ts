@@ -1,16 +1,28 @@
 import Joi from 'joi';
-import { password } from '../../validation';
-import { NewCreatedUser } from './user.interface';
-
-const createUserBody: Record<keyof NewCreatedUser, any> = {
-  email: Joi.string().email(),
-  firstName: Joi.string().required(),
-  lastName: Joi.string().required(),
-  password: Joi.string().required().custom(password),
-  phoneNumber: Joi.string(),
-  role: Joi.string().required().valid('user', 'admin', 'hirer')
-};
+import { objectId } from '../../validation';
 
 export const createUser = {
-  body: Joi.object(createUserBody).keys(createUserBody)
+  body: Joi.object().keys({
+    firstName: Joi.string().required(),
+    lastName: Joi.string().required(),
+    role: Joi.string().required().valid('user', 'admin', 'hirer'),
+    email: Joi.string().when('role', {
+      is: 'hirer',
+      then: Joi.string().required(),
+      otherwise: Joi.forbidden()
+    }),
+    phoneNumber: Joi.string().when('role', {
+      is: 'user',
+      then: Joi.string().required(),
+      otherwise: Joi.forbidden()
+    })
+  })
 };
+
+export const getUserById = {
+  params: Joi.object({
+    userId: Joi.string().required().custom(objectId)
+  })
+};
+
+// TODO: update user profile picture validation. Payload will be a form data

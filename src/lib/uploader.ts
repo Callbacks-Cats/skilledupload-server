@@ -13,7 +13,7 @@ let validateImage = function (file: any, cb: any) {
   }
 };
 export const imageUploader = multer({
-  storage: storage,
+  storage: multer.memoryStorage(),
   fileFilter: function (req, file, callback) {
     validateImage(file, callback);
   }
@@ -32,9 +32,25 @@ let validateFile = function (file: any, cb: any) {
   }
 };
 
+let validateVideoFile = function (file: any, cb: any) {
+  let allowedFileTypes = /mp4|avi|flv|wmv|mov/;
+  const extension = allowedFileTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimeType = allowedFileTypes.test(file.mimetype);
+  if (extension && mimeType) {
+    return cb(null, true);
+  } else {
+    cb('Invalid file type. Only MP4, AVI, FLV, WMV, MOV file are allowed.');
+  }
+};
+
 export const fileUploader = multer({
-  storage: storage,
+  storage: multer.memoryStorage(),
   fileFilter: function (req, file, callback) {
-    validateFile(file, callback);
+    // if file is video
+    if (file.fieldname === 'video') {
+      validateVideoFile(file, callback);
+    } else {
+      validateFile(file, callback);
+    }
   }
 });

@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import config from '../config';
+import applicantRoute from './applicant.route';
 import authRoutes from './auth.route';
 import docsRoutes from './docs.routes';
+import jobCategoryRoutes from './jobCategory.route';
 import userRoutes from './user.route';
 
 const router = Router();
@@ -25,6 +27,14 @@ const devIRoute: IRoute[] = [
   {
     path: '/auth',
     router: authRoutes
+  },
+  {
+    path: '/applicant',
+    router: applicantRoute
+  },
+  {
+    path: '/job-category',
+    router: jobCategoryRoutes
   }
 ];
 

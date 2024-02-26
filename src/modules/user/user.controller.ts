@@ -3,6 +3,7 @@ import httpStatus from 'http-status';
 import mongoose from 'mongoose';
 import { ApiError, catchAsync, logger } from '../../utils';
 import { SendResponse } from '../../utils/SendRespnse';
+import { IUserDoc } from './user.interface';
 import * as userService from './user.service';
 
 export const createUser = catchAsync(async (req: Request, res: Response) => {
@@ -19,4 +20,13 @@ export const getUser = catchAsync(async (req: Request, res: Response) => {
     }
     res.send(user);
   }
+});
+
+export const updateUpdateProfilePicture = catchAsync(async (req: Request, res: Response) => {
+  const user = await userService.updateProfilePicture(
+    (req.user as IUserDoc)?.id,
+    req.file?.buffer as Buffer
+  );
+
+  return SendResponse(res, true, user, httpStatus.OK, 'Profile picture updated successfully');
 });

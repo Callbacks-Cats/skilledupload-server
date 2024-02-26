@@ -47,7 +47,7 @@ export const sendEmail = async (
  */
 export const sendResetPasswordEmail = async (to: string, token: string) => {
   const subject = 'Reset password';
-  const resetPasswordUrl = `${config.clientUrl}/reset-password?token=${token}`;
+  const resetPasswordUrl = `${config.clientUrl}/auth/reset-password?token=${token}`;
   const text = `Hi,
   To reset your password, click on this link: ${resetPasswordUrl}
   If you did not request any password resets, then ignore this email.`;
@@ -73,7 +73,7 @@ export const sendVerificationEmail = async (
 ): Promise<void> => {
   const subject = 'Account Verification';
   // TODO: It should be an actual URL of the frontend
-  const verificationUrl = `${config.clientUrl}/verify-email?token=${token}`;
+  const verificationUrl = `${config.clientUrl}/auth/account-verification?token=${token}`;
   const text = `Hi ${name},
   To verify your email, click on this link: ${verificationUrl}
   If you did not create an account, then ignore this email.`;
