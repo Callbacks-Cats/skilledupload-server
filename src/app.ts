@@ -43,6 +43,15 @@ app.use(
   })
 );
 
+// TODO: Test endpoint for testing the CI/CD pipeline. Remove this endpoint in production
+app.get('/', (req, res) => {
+  return res.status(200).json({
+    message: 'Welcome to the API',
+    status: 'success',
+    code: 200
+  });
+});
+
 // api docs
 app.use('/docs', swagger.serve, swagger.setup(specs));
 
