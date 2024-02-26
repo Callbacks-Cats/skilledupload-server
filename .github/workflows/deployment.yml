@@ -5,9 +5,7 @@ name: API CI/CD
 
 on:
   push:
-    branches: ['main', 'development']
-  pull_request:
-    branches: ['main', 'development']
+    branches: ['main']
 
 jobs:
   build:
