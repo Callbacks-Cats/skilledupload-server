@@ -3,7 +3,6 @@ import httpStatus from 'http-status';
 import { ApiError, catchAsync } from '../../utils';
 import { SendResponse } from '../../utils/SendRespnse';
 import { IUserDoc } from '../user/user.interface';
-import { IApplicantDoc } from './applicant.interface';
 import * as applicantService from './applicant.service';
 
 export const createApplicant = catchAsync(async (req: Request, res: Response) => {
@@ -13,7 +12,7 @@ export const createApplicant = catchAsync(async (req: Request, res: Response) =>
 
 export const updateApplicant = catchAsync(async (req: Request, res: Response) => {
   const applicant = await applicantService.udpateApplicantByUserId(
-    (req.user as IApplicantDoc).id,
+    (req.user as IUserDoc).id,
     req.body
   );
   return SendResponse(res, true, applicant, httpStatus.OK, 'Applicant updated successfully');
