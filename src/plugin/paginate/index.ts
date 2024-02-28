@@ -61,7 +61,7 @@ export const paginate = <T extends Document, U extends Model<U>>(schema: Schema<
         });
         project = projectionCriteria.join(' ');
       } else {
-        project = '-createdAt -updatedAt';
+        project = '-password -__v';
       }
 
       const limit =
