@@ -23,6 +23,9 @@ if (config.env !== 'test') {
 // set security HTTP headers
 app.use(helmet());
 
+// serve the static files
+app.use(express.static('public'));
+
 // parse json request body
 app.use(express.json({ limit: '3000mb' }));
 
