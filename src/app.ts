@@ -1,6 +1,7 @@
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
+import fs from 'fs';
 import helmet from 'helmet';
 import httpStatus from 'http-status';
 import passport from 'passport';
@@ -20,11 +21,17 @@ if (config.env !== 'test') {
   app.use(morgan.errorHandler);
 }
 
+// create /public folder if it doesn't exist
+const dir = './public';
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir);
+}
+
 // set security HTTP headers
 app.use(helmet());
 
 // serve the static files
-app.use(express.static('public'));
+app.use('/public', express.static('public'));
 
 // parse json request body
 app.use(express.json({ limit: '3000mb' }));
@@ -47,13 +54,7 @@ app.use(
 );
 
 // api docs
-app.use(
-  '/api/docs',
-  swagger.serve,
-  swagger.setup(specs, {
-    explorer: true
-  })
-);
+app.use('/api/docs', swagger.serve, swagger.setup(specs, {}));
 
 // jwt authentication
 app.use(passport.initialize());
