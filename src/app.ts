@@ -39,13 +39,18 @@ app.use(compression());
 // enable cors
 app.use(
   cors({
-    origin: 'http://localhost:3000', // Specify the allowed origin
-    credentials: true // Allow sending cookies and credentials
+    origin: '*'
   })
 );
 
 // api docs
-app.use('/api/docs', swagger.serve, swagger.setup(specs));
+app.use(
+  '/api/docs',
+  swagger.serve,
+  swagger.setup(specs, {
+    explorer: true
+  })
+);
 
 // jwt authentication
 app.use(passport.initialize());
