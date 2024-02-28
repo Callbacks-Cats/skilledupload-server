@@ -9,7 +9,8 @@ const allRoles = {
     'deleteAny',
     'readAny',
     'manageApplicant',
-    'manageJobCategories'
+    'manageJobCategories',
+    'manageJobPosts'
   ]
 };
 

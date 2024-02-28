@@ -4,6 +4,8 @@ import applicantRoute from './applicant.route';
 import authRoutes from './auth.route';
 import docsRoutes from './docs.routes';
 import jobCategoryRoutes from './jobCategory.route';
+import jobPostRoute from './jobPost.route';
+import storageRoute from './storage.route';
 import userRoutes from './user.route';
 
 const router = Router();
@@ -35,6 +37,14 @@ const devIRoute: IRoute[] = [
   {
     path: '/job-category',
     router: jobCategoryRoutes
+  },
+  {
+    path: '/job-post',
+    router: jobPostRoute
+  },
+  {
+    path: '/storage',
+    router: storageRoute
   }
 ];
 

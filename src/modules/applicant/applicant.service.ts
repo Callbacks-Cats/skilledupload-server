@@ -122,7 +122,6 @@ export const udpateApplicantByUserId = async (
   if (!applicant) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Applicant not found');
   }
-  console.log('applicantBody', applicantBody);
   applicant = await Applicant.findOneAndUpdate(
     { user: userId },
     { ...applicantBody },
