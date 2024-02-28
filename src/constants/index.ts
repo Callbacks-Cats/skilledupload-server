@@ -41,3 +41,9 @@ export const CONTENT_TYPES = {
   VIDEO: 'video/mp4',
   FILE: 'application/pdf'
 };
+
+export const JOB_POST_STATUSES = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected'
+};
