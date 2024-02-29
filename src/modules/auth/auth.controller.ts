@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { USER_ROLES } from '../../constants';
-import { catchAsync, logger } from '../../utils';
+import { USER_ROLES, USER_STATUSES } from '../../constants';
+import { ApiError, catchAsync, logger } from '../../utils';
 import { SendResponse } from '../../utils/SendRespnse';
 import { applicantService } from '../applicant';
 import { emailService } from '../email';
@@ -27,7 +27,6 @@ export const register = catchAsync(async (req: Request, res: Response) => {
   } else if (user.role === USER_ROLES.USER) {
     // creating the job seeker profile
     await applicantService.createApplicant({ user: user.id });
-
     // TODO: this should be sent via task queue & sms service. [Right now we are using email service for testing purpose.]
     // const otp = await otpService.generateOtp(user.id);
     // await emailService.sendVerificationEmail(
@@ -50,6 +49,12 @@ export const login = catchAsync(async (req: Request, res: Response) => {
   if (role === USER_ROLES.USER) {
     user = await authService.loginUserWithPhoneNumber(phoneNumber, password);
   }
+
+  // if account is not active
+  if (user?.status === USER_STATUSES.INACTIVE) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Account is not active');
+  }
+
   // const user = await authService.loginUserWithEmailAndPassword(email, password);
   const token = await tokenService.generateAuthTokens(user as any);
   return SendResponse(res, true, { user, token }, httpStatus.OK, 'Login successful');

@@ -42,9 +42,6 @@ export const deleteFile = async (url: string): Promise<any> => {
   const fileName = url.split('/').pop();
   const folderName = url.split('/')[url.split('/').length - 2];
 
-  console.log('folderName', folderName);
-  console.log('fileName', fileName);
-
   // // delete the file from the DigitalOcean Spaces
   const deletedFile = await deleteFileFromSpace(
     folderName === 'images'
