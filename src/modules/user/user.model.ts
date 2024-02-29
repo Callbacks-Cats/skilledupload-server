@@ -108,6 +108,18 @@ userSchema.method('isPasswordMatch', async function (password: string): Promise<
   return bcrypt.compare(password, user.password);
 });
 
+/**
+ * Change user's password
+ * @param {string} newPassword
+ * @returns {Promise<IUserDoc>}
+ */
+userSchema.method('changePassword', async function (newPassword: string): Promise<IUserDoc> {
+  const user = this;
+  user.password = newPassword;
+  await user.save();
+  return user;
+});
+
 userSchema.pre('save', async function (next) {
   const user = this;
   if (user.isModified('password')) {

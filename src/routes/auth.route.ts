@@ -17,7 +17,7 @@ router.post(
   validate(authValidation.resetPassword),
   authController.resetPassword
 );
-router.post('/verify-email', validate(authValidation.verifyEmail), authController.verifyEmail);
+// router.post('/verify-email', validate(authValidation.verifyEmail), authController.verifyEmail);
 router.post('/verify-otp', validate(authValidation.verifyOtp), authController.verfiyOtp);
 
 export default router;
