@@ -25,8 +25,6 @@ export const createUser = async (userBody: NewCreatedUser): Promise<IUserDoc> =>
  * @returns {Promise<IUserDoc>}
  */
 export const registerUser = async (userBody: NewCreatedUser): Promise<IUserDoc> => {
-  // if  user body has phone number or email then check that already have an user based on phoneNumber and email
-
   if (userBody?.role === USER_ROLES.HIRER) {
     if (await User.isEmailTaken(userBody?.email as string)) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');

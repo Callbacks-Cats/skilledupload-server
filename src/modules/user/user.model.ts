@@ -1,6 +1,6 @@
+// user.model.ts
 import bcrypt from 'bcryptjs';
 import mongoose, { Schema } from 'mongoose';
-import validator from 'validator';
 import { roles } from '../../config/roles';
 import { USER_STATUSES } from '../../constants';
 import paginate from '../../plugin/paginate';
@@ -21,25 +21,13 @@ const userSchema = new Schema<IUserDoc, IUserModel>(
     },
     email: {
       type: String,
-      unique: true,
       trim: true,
-      lowercase: true,
-      validate(value: string) {
-        if (!validator.isEmail(value)) {
-          throw new Error('Invalid email');
-        }
-      }
+      lowercase: true
     },
     phoneNumber: {
       type: String,
       trim: true,
-      unique: true,
       default: ''
-      // validate(value: string) {
-      //   if (!validator.isMobilePhone(value, 'any')) {
-      //     throw new Error('Invalid phone number');
-      //   }
-      // }
     },
     password: {
       type: String,
@@ -72,7 +60,7 @@ const userSchema = new Schema<IUserDoc, IUserModel>(
   { timestamps: true }
 );
 
-// add plugin to converts to mongose to json & paginate
+// add plugin to converts to mongoose to json & paginate
 userSchema.plugin(toJSON);
 userSchema.plugin(paginate);
 
@@ -85,6 +73,9 @@ userSchema.plugin(paginate);
 userSchema.static(
   'isEmailTaken',
   async function (email: string, excludeUserId: mongoose.ObjectId): Promise<boolean> {
+    if (!email) {
+      return false; // If email is not provided, it cannot be taken
+    }
     const user = await this.findOne({ email, _id: { $ne: excludeUserId } });
     return !!user;
   }
@@ -92,13 +83,16 @@ userSchema.static(
 
 /**
  * Check if phone number is taken
- * @param {stirng} phoneNumber - The user's phone number
+ * @param {string} phoneNumber - The user's phone number
  * @param {ObjectId} [excludeUserId] - The id of the user to be excluded
  * @returns {Promise<boolean>}
  */
 userSchema.static(
   'isPhoneNumberTaken',
   async function (phoneNumber: string, excludeUserId: mongoose.ObjectId): Promise<boolean> {
+    if (!phoneNumber) {
+      return false; // If phoneNumber is not provided, it cannot be taken
+    }
     const user = await this.findOne({ phoneNumber, _id: { $ne: excludeUserId } });
     return !!user;
   }

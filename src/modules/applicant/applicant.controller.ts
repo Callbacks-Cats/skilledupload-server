@@ -24,8 +24,6 @@ export const getApplicant = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const uploadResume = catchAsync(async (req: Request, res: Response) => {
-  console.log(req.file, 'req.file');
-
   if (!req?.file) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Please upload a resume');
   }

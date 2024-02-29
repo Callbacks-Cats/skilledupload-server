@@ -32,12 +32,13 @@ const applicantSchema = new Schema<IApplicantDoc, IApplicantModel>(
       {
         file: {
           type: String,
-          validate: {
-            validator: function (v: string) {
-              return /^(http|https):\/\/[^ "]+$/.test(v);
-            },
-            message: (props) => `${props.value} is not a valid URL!`
-          }
+          default: ''
+          // validate: {
+          //   validator: function (v: string) {
+          //     return /^(http|https):\/\/[^ "]+$/.test(v);
+          //   },
+          //   message: (props) => `${props.value} is not a valid URL!`
+          // }
         }
       }
     ],
