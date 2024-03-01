@@ -4,6 +4,7 @@ import { QueryResult } from '../../plugin/paginate';
 export interface IJobCategory {
   name: string;
   description?: string;
+  image: string;
 }
 
 export interface IJobCategoryDoc extends IJobCategory, Document {}

@@ -11,6 +11,10 @@ const jobCategorySchema = new Schema<IJobCategoryDoc, IJobCategoryModel>(
     },
     description: {
       type: String
+    },
+    image: {
+      type: String,
+      required: true
     }
   },
   {
