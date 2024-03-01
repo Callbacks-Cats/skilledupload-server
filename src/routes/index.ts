@@ -2,6 +2,7 @@ import { Router } from 'express';
 import config from '../config';
 import applicantRoute from './applicant.route';
 import authRoutes from './auth.route';
+import bannerConfigRoute from './bannerConfig.route';
 import docsRoutes from './docs.routes';
 import jobCategoryRoutes from './jobCategory.route';
 import jobPostRoute from './jobPost.route';
@@ -45,6 +46,10 @@ const devIRoute: IRoute[] = [
   {
     path: '/storage',
     router: storageRoute
+  },
+  {
+    path: '/banner-config',
+    router: bannerConfigRoute
   }
 ];
 

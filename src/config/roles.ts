@@ -10,7 +10,8 @@ const allRoles = {
     'readAny',
     'manageApplicant',
     'manageJobCategories',
-    'manageJobPosts'
+    'manageJobPosts',
+    'manageBanner'
   ]
 };
 
