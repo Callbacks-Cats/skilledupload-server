@@ -1,7 +1,14 @@
 import httpStatus from 'http-status';
 import mongoose, { Types } from 'mongoose';
-import { CONTENT_TYPES, FILE_TYPES, RESUME_STATUS, SPACE_FOLDERS } from '../../constants';
+import {
+  CONTENT_TYPES,
+  FILE_TYPES,
+  RESUME_STATUS,
+  SPACE_FOLDERS,
+  USER_ROLES
+} from '../../constants';
 import { deleteFileFromSpace, updateFileInSpace } from '../../lib';
+import { IOptions } from '../../plugin/paginate';
 import { ApiError } from '../../utils';
 import { userService } from '../user';
 import { IApplicantBody, IApplicantDoc } from './applicant.interface';
@@ -340,4 +347,72 @@ export const approveApplicantProfile = async (
   });
 
   return (applicant as IApplicantDoc).populate('user');
+};
+
+/**
+ * Create a new applicant by admin
+ * @param {IApplicantBody} applicantBody
+ * @returns {Promise<IApplicantDoc>}
+ */
+export const createApplicantByAdmin = async (applicantBody: any): Promise<any> => {
+  const userExist = await userService.getUserByPhone(applicantBody.phoneNumber);
+  if (userExist) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'User already exist');
+  }
+
+  // user paylaod
+  const userPayload: any = {
+    role: USER_ROLES.USER,
+    firstName: applicantBody.firstName,
+    lastName: applicantBody.lastName,
+    phoneNumber: applicantBody.phoneNumber
+  };
+
+  const password = userService.generatePassword();
+
+  userPayload['password'] = password;
+
+  const user = await userService.createUser(userPayload as any);
+
+  if (user) {
+    const applicantPayload = {
+      user: user._id,
+      status: RESUME_STATUS.APPROVED,
+      intro: applicantBody.intro || '',
+      resume: applicantBody.resume || '',
+      skills: applicantBody.skills || [],
+      videoResume: applicantBody.videoResume || []
+    };
+    const applicant: any = await Applicant.create(applicantPayload);
+    if (applicant) {
+      // TODO: send sms
+      const userData = await applicant.populate(
+        'user',
+        'firstName lastName phoneNumber profilePicture role'
+      );
+      return {
+        firstName: applicant.user?.firstName,
+        lastName: applicant.user?.lastName,
+        phoneNumber: applicant.user?.phoneNumber,
+        role: applicant.user?.role,
+        resume: applicant.resume,
+        intro: applicant.intro,
+        skills: applicant.skills,
+        videoResume: applicant.videoResume,
+        education: applicant.education,
+        password // TODO: Remove password from response after implementing sms.
+      };
+    }
+  }
+};
+
+/**
+ * Get All Applicants
+ * @param {IOptions} options
+ * @param {filters} filters
+ * @returns {Promise<any>}
+ */
+export const queryApplicants = (filters: any, options: IOptions): Promise<any> => {
+  options = { ...options, populate: 'user' };
+  return Applicant.paginate(filters, options);
 };

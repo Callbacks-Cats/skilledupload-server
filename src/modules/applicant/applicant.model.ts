@@ -59,6 +59,9 @@ const applicantSchema = new Schema<IApplicantDoc, IApplicantModel>(
   { timestamps: true }
 );
 
+// Create compound index and text index
+applicantSchema.index({ 'user.firstName': 'text', 'user.lastName': 'text' });
+
 // Plugin
 applicantSchema.plugin(toJSON);
 applicantSchema.plugin(paginate);

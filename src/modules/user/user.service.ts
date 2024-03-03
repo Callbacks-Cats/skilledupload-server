@@ -133,3 +133,32 @@ export const updateProfilePicture = async (
     throw error;
   }
 };
+
+/**
+ * Generate a random password
+ * @returns {string}
+ */
+export const generatePassword = () => {
+  var length = 10;
+  var capitalLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  var lowercaseLetters = 'abcdefghijklmnopqrstuvwxyz';
+  var numbers = '0123456789';
+  var specialCharacters = '@#$%&';
+  var charset = capitalLetters + lowercaseLetters + numbers + specialCharacters;
+  var password = '';
+  password += capitalLetters.charAt(Math.floor(Math.random() * capitalLetters.length));
+  password += lowercaseLetters.charAt(Math.floor(Math.random() * lowercaseLetters.length));
+  password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+  for (var i = 3; i < length; i++) {
+    var charIndex = Math.floor(Math.random() * charset.length);
+    password += charset.charAt(charIndex);
+  }
+  password = password
+    .split('')
+    .sort(function () {
+      return 0.5 - Math.random();
+    })
+    .join('');
+
+  return password;
+};

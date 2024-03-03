@@ -6,6 +6,7 @@ import bannerConfigRoute from './bannerConfig.route';
 import docsRoutes from './docs.routes';
 import jobCategoryRoutes from './jobCategory.route';
 import jobPostRoute from './jobPost.route';
+import searchRoute from './search.route';
 import storageRoute from './storage.route';
 import userRoutes from './user.route';
 
@@ -50,6 +51,10 @@ const devIRoute: IRoute[] = [
   {
     path: '/banner-config',
     router: bannerConfigRoute
+  },
+  {
+    path: '/search',
+    router: searchRoute
   }
 ];
 
