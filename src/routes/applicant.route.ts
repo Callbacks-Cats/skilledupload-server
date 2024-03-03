@@ -10,7 +10,13 @@ import { validate } from '../validation';
 
 const router: Router = express.Router();
 
-// test route
+router.get(
+  '/',
+  auth('manageApplicant'),
+  validate(applicationValidation.getAllApplicants),
+  applicantController.getAllApplicants
+);
+
 router.post(
   '/',
   auth('updateOwn'),
@@ -62,6 +68,13 @@ router.get(
   auth('manageApplicant'),
   validate(applicationValidation.getApplicantByUserId),
   applicantController.getApplicant
+);
+
+router.post(
+  '/create-user-applicant',
+  auth('createUserApplicant'),
+  validate(applicationValidation.createUserApplicantByAdmin),
+  applicantController.createUserApplicantByAdmin
 );
 
 export default router;

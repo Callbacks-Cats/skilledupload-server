@@ -11,7 +11,8 @@ const allRoles = {
     'manageApplicant',
     'manageJobCategories',
     'manageJobPosts',
-    'manageBanner'
+    'manageBanner',
+    'createUserApplicant'
   ]
 };
 
