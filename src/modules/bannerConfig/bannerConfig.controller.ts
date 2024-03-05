@@ -36,3 +36,9 @@ export const toggoleBannerStatus = catchAsync(async (req: Request, res: Response
   const banner = await bannerConfigService.toggleBannerStatus(req.params.id);
   return SendResponse(res, true, banner, httpStatus.OK, 'Banner status toggled successfully');
 });
+
+export const getBannerById = catchAsync(async (req: Request, res: Response) => {
+  logger.info('Get banner by id!');
+  const banner = await bannerConfigService.getBannerById(req.params.id);
+  return SendResponse(res, true, banner, httpStatus.OK, 'Banner retrieved successfully');
+});

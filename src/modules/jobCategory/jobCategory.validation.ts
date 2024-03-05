@@ -32,3 +32,9 @@ export const deleteJobCategory = {
     id: Joi.string().required().custom(objectId)
   })
 };
+
+export const getJobCategoryById = {
+  params: Joi.object().keys({
+    id: Joi.string().required().custom(objectId)
+  })
+};

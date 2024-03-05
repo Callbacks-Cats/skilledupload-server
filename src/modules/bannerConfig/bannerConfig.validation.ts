@@ -43,3 +43,9 @@ export const toggoleBannerStatus = {
     id: Joi.string().required().custom(objectId)
   })
 };
+
+export const getBannerById = {
+  params: Joi.object().keys({
+    id: Joi.string().required().custom(objectId)
+  })
+};

@@ -15,6 +15,7 @@ router
 
 router
   .route('/:id')
+  .get(validate(jobCategoryValidation.getJobCategoryById), jobCategoryController.getJobCategoryById)
   .patch(
     auth('manageJobCategories'),
     validate(jobCategoryValidation.updateJobCategory),
