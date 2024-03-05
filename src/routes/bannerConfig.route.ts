@@ -16,6 +16,7 @@ router
 
 router
   .route('/:id')
+  .get(validate(bannerConfigValidator.getBannerById), bannerConfigController.getBannerById)
   .patch(
     auth('manageBanner'),
     validate(bannerConfigValidator.updateBanner),

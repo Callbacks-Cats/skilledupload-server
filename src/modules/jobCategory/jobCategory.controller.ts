@@ -23,3 +23,8 @@ export const deleteJobCategory = catchAsync(async (req: Request, res: Response) 
   const category = await jobCategoryService.deleteJobCategory(req.params.id);
   return SendResponse(res, true, category, httpStatus.OK, 'Job category deleted successfully');
 });
+
+export const getJobCategoryById = catchAsync(async (req: Request, res: Response) => {
+  const category = await jobCategoryService.getJobCategoryById(req.params.id);
+  return SendResponse(res, true, category, httpStatus.OK, 'Job category');
+});

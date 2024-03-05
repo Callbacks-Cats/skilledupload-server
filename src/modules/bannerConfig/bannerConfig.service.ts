@@ -88,3 +88,16 @@ export const toggleBannerStatus = async (id: string): Promise<IBannerConfigDoc> 
   await banner.save();
   return banner;
 };
+
+/**
+ * Get banner by id
+ * @param {string} id - The id of the banner
+ * @returns {Promise<IBannerConfigDoc>} - The banner
+ */
+export const getBanner = async (id: string): Promise<IBannerConfigDoc | null> => {
+  const banner = await BannerConfig.findOne({ _id: id });
+  if (!banner) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Banner not found');
+  }
+  return banner;
+};
