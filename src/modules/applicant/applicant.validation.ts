@@ -125,3 +125,9 @@ export const getAllApplicants = {
     page: Joi.number()
   })
 };
+
+export const getApplicantBySlug = {
+  params: {
+    slug: Joi.string().required()
+  }
+};

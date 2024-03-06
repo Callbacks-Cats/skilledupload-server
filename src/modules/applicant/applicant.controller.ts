@@ -23,6 +23,11 @@ export const getApplicant = catchAsync(async (req: Request, res: Response) => {
   return SendResponse(res, true, applicant, httpStatus.OK, 'Applicant fetched successfully');
 });
 
+export const getApplicantBySlug = catchAsync(async (req: Request, res: Response) => {
+  const applicant = await applicantService.getApplicantBySlug(req.params.slug);
+  return SendResponse(res, true, applicant, httpStatus.OK, 'Applicant fetched successfully');
+});
+
 export const getAllApplicants = catchAsync(async (req: Request, res: Response) => {
   const filters = pick(req.query, ['status']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);

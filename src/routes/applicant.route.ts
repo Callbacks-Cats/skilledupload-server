@@ -70,6 +70,12 @@ router.get(
   applicantController.getApplicant
 );
 
+router.get(
+  '/applicant/:slug',
+  validate(applicationValidation.getApplicantBySlug),
+  applicantController.getApplicantBySlug
+);
+
 router.post(
   '/create-user-applicant',
   auth('createUserApplicant'),

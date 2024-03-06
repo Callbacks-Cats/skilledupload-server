@@ -64,6 +64,51 @@ export const getApplicantByUserId = async (userId: string): Promise<any> => {
   return data;
 };
 
+/**
+ * Get applicant by userId
+ * @param {string} slug
+ * @returns {Promise<IApplicantDoc>}
+ */
+export const getApplicantBySlug = async (slug: string): Promise<any> => {
+  const applicant = await Applicant.findOne({ slug: slug }).populate({
+    path: 'skills.jobCategory',
+    select: 'name _id'
+  });
+
+  const user = await userService.getUserById(applicant?.user as any);
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  if (!applicant) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Applicant not found');
+  }
+
+  const data = {
+    id: user?._id,
+    firstName: user?.firstName,
+    lastName: user?.lastName,
+    phoneNumber: user?.phoneNumber,
+    role: user?.role,
+    status: applicant?.status,
+    resume: applicant?.resume,
+    intro: applicant?.intro,
+    skills: applicant?.skills?.map((skill: any) => {
+      // @ts-ignore
+      return {
+        name: skill?.jobCategory?.name,
+        yearsOfExperience: skill?.yearsOfExperience,
+        id: skill?.jobCategory?._id
+      };
+    }),
+    videoResume: applicant?.videoResume,
+    education: applicant?.education,
+    slug: applicant?.slug
+  };
+  return data;
+};
+
 // export const getApplicantByUserId = async (userId: string): Promise<IApplicantDoc | null> => {
 //   const pipeline = [
 //     {
