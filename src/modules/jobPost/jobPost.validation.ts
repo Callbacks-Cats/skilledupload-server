@@ -8,6 +8,10 @@ export const createJobPost = {
     location: Joi.string().required(),
     date: Joi.date().required(),
     company: Joi.string().required(),
+    gender: Joi.string().required(),
+    experience: Joi.number().required(),
+    education: Joi.string().required(),
+    careerLevel: Joi.string().required(),
     salary: Joi.number().required(),
     image: Joi.string().required(),
     createdBy: Joi.string().required().custom(objectId)
@@ -31,6 +35,10 @@ export const updateJobPost = {
       location: Joi.string(),
       date: Joi.date(),
       company: Joi.string(),
+      gender: Joi.string(),
+      experience: Joi.number(),
+      education: Joi.string(),
+      careerLevel: Joi.string(),
       salary: Joi.number(),
       image: Joi.string(),
       createdBy: Joi.string().custom(objectId)

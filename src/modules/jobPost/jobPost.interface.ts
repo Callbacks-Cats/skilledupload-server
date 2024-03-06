@@ -7,6 +7,10 @@ export interface IJobPost {
   location: string;
   date: Date;
   company: string;
+  gender: string;
+  experience: number;
+  education: string;
+  careerLevel: string;
   salary: number;
   status: string;
   image: string;

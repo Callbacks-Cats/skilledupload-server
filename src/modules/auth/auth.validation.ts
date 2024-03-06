@@ -71,3 +71,10 @@ export const verifyOtp = {
     otp: Joi.string().required().max(4).min(4)
   })
 };
+
+export const changePassword = {
+  body: Joi.object().keys({
+    oldPassword: Joi.string().required(),
+    newPassword: Joi.string().required().custom(password)
+  })
+};

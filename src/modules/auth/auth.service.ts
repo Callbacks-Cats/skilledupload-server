@@ -139,3 +139,21 @@ export const verifyOtp = async (otp: string): Promise<IUserDoc | null> => {
   await Otp.deleteMany({ user: user.id });
   return updatedUser;
 };
+
+/**
+ * Change password
+ * @param {string} userId
+ * @param {{oldPassword: string, newPassword: string}} body
+ * @returns {Promise<IUserDoc>}
+ */
+export const changePassword = async (
+  userId: string,
+  body: { oldPassword: string; newPassword: string }
+): Promise<IUserDoc> => {
+  const user = await getUserById(new Types.ObjectId(userId));
+  if (!user || !(await user.isPasswordMatch(body.oldPassword))) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect old password');
+  }
+  await user.changePassword(body.newPassword);
+  return user;
+};

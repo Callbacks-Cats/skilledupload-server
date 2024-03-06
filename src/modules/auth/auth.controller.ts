@@ -66,3 +66,10 @@ export const verfiyOtp = catchAsync(async (req: Request, res: Response) => {
   const token = await tokenService.generateAuthTokens(user as any);
   return SendResponse(res, true, { user, token }, httpStatus.OK, 'OTP verified successfully');
 });
+
+export const changePassword = catchAsync(async (req: Request, res: Response) => {
+  logger.info(`Changing password`);
+
+  const user = await authService.changePassword(req.user as any, req.body);
+  return SendResponse(res, true, user, httpStatus.OK, 'Password changed successfully');
+});
