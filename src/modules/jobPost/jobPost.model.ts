@@ -30,6 +30,22 @@ const jobPostSchema = new Schema<IJobPostDoc, IJobPostModel>(
       type: Number,
       required: true
     },
+    gender: {
+      type: String,
+      required: true
+    },
+    experience: {
+      type: Number,
+      required: true
+    },
+    education: {
+      type: String,
+      required: true
+    },
+    careerLevel: {
+      type: String,
+      required: true
+    },
     status: {
       type: String,
       enum: Object.values(JOB_POST_STATUSES),
@@ -58,6 +74,11 @@ jobPostSchema.plugin(paginate);
  * Add slug before saving to the database
  */
 jobPostSchema.pre<IJobPostDoc>('save', function (next) {
+  if (!this.isNew) {
+    next();
+    return;
+  }
+
   const date = new Date(this.date);
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
