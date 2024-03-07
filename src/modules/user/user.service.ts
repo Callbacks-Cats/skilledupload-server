@@ -1,7 +1,8 @@
 import httpStatus from 'http-status';
+import moment from 'moment';
 import mongoose, { Types } from 'mongoose';
 import { CONTENT_TYPES, FILE_TYPES, SPACE_FOLDERS, USER_ROLES } from '../../constants';
-import { updateFileInSpace } from '../../lib';
+import { deleteFileFromSpace, updateFileInSpace } from '../../lib';
 import { resizeImage } from '../../lib/media.manipulation';
 import { ApiError } from '../../utils';
 import { IUserDoc, NewCreatedUser, UpdateUserBody } from './user.interface';
@@ -101,13 +102,13 @@ export const updateProfilePicture = async (
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
-  const fileName = `${userId}.jpg`;
+  const oldImage = user.profilePicture;
+  const currentTimeStamp = moment().format('YYYY-MM-DD-HH-mm-ss');
+
+  const fileName = `${userId}-${currentTimeStamp}.jpg`;
   const resizedImage = await resizeImage(profilePicture, { width: 250, height: 250 });
 
-  const session = await mongoose.startSession();
-
   try {
-    session.startTransaction();
     const uploadedImage = await updateFileInSpace(
       FILE_TYPES.IMAGE,
       resizedImage,
@@ -116,20 +117,16 @@ export const updateProfilePicture = async (
       CONTENT_TYPES.IMAGE
     );
     if (uploadedImage) {
-      user = await updateUserById(
-        userId.toString(),
-        { profilePicture: uploadedImage.url },
-        { session }
+      await deleteFileFromSpace(
+        FILE_TYPES.IMAGE,
+        oldImage as string,
+        SPACE_FOLDERS.PROFILE_PICTURE
       );
+      user = await updateUserById(userId.toString(), { profilePicture: uploadedImage.url });
     }
-
-    await session.commitTransaction();
-    session.endSession();
 
     return user;
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
     throw error;
   }
 };
