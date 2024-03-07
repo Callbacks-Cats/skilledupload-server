@@ -237,6 +237,7 @@ export const uploadResume = async (userId: string, file: Buffer): Promise<IAppli
       return (updatedApplicant as IApplicantDoc).populate('user');
     }
   } catch (error) {
+    console.log('Error: ', error);
     await session.abortTransaction();
     session.endSession();
     throw new ApiError(
