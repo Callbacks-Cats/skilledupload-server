@@ -43,6 +43,10 @@ export const search = async (payload: any): Promise<any> => {
 
   const getAllApplicants = await Applicant.find({}).populate('user skills.jobCategory');
 
+  if (keyword === undefined && jobCategory === undefined && userId === undefined) {
+    return getAllApplicants;
+  }
+
   // if userId is provided
   if (userId) {
     const searchResults = getAllApplicants.filter((applicant: any) => {
@@ -76,6 +80,7 @@ export const search = async (payload: any): Promise<any> => {
   // if name is provided
   if (keyword) {
     const searchResults = getAllApplicants.filter((applicant: any) => {
+      console.log(applicant);
       if (!applicant.user) return false;
 
       if (!applicant.skills) return false;
@@ -83,11 +88,12 @@ export const search = async (payload: any): Promise<any> => {
         if (!skill) return false;
 
         const jobCategoryName = skill?.jobCategory?.name;
+        console.log(jobCategoryName);
         if (!jobCategoryName) return false;
         return jobCategoryName.toLowerCase().includes(keyword.toLowerCase());
       });
     });
-
+    console.log(searchResults);
     return searchResults;
   }
 
@@ -95,10 +101,18 @@ export const search = async (payload: any): Promise<any> => {
   if (jobCategory) {
     const filteredApplicants = getAllApplicants?.filter((applicant: any) => {
       if (!applicant.skills) return false;
-      return applicant.skills.some((skill: any) => {
-        return skill?.jobCategory?.toString().toLowerCase() === jobCategory.toLowerCase();
+      const applicnats = applicant.skills?.map((cat: any) => {
+        if (cat?.jobCategory?._id.toString().toLowerCase() === jobCategory.toLowerCase()) {
+          return applicant;
+        }
       });
+      return applicnats;
     });
-    return filteredApplicants;
+
+    const applicants = filteredApplicants.filter((applicant: any) => {
+      if (!applicant.user) return false;
+      return applicant.user;
+    });
+    return applicants;
   }
 };
