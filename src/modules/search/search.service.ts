@@ -39,9 +39,9 @@ import { Applicant } from '../applicant';
 // };
 
 export const search = async (payload: any): Promise<any> => {
-  const { name, jobCategory, userId } = payload;
+  const { keyword, jobCategory, userId } = payload;
 
-  const getAllApplicants = await Applicant.find({}).populate('user');
+  const getAllApplicants = await Applicant.find({}).populate('user skills.jobCategory');
 
   // if userId is provided
   if (userId) {
@@ -53,14 +53,14 @@ export const search = async (payload: any): Promise<any> => {
   }
 
   // if name and jobCategory is provided
-  if (name && jobCategory) {
+  if (keyword && jobCategory) {
     const searchResults = getAllApplicants.filter((applicant: any) => {
       if (!applicant.skills) return false;
       if (!applicant.user) return false;
 
       const firstName = applicant.user.firstName.toLowerCase();
       const lastName = applicant.user.lastName.toLowerCase();
-      const searchName = name.toLowerCase();
+      const searchName = keyword.toLowerCase();
 
       const filteredSkills = applicant.skills.filter((skill: any) => {
         return skill?.jobCategory?.toString().toLowerCase() === jobCategory.toLowerCase();
@@ -74,14 +74,20 @@ export const search = async (payload: any): Promise<any> => {
   }
 
   // if name is provided
-  if (name) {
+  if (keyword) {
     const searchResults = getAllApplicants.filter((applicant: any) => {
       if (!applicant.user) return false;
-      const firstName = applicant.user.firstName.toLowerCase();
-      const lastName = applicant.user.lastName.toLowerCase();
-      const searchName = name.toLowerCase();
-      return firstName.includes(searchName) || lastName.includes(searchName);
+
+      if (!applicant.skills) return false;
+      return applicant.skills.some((skill: any) => {
+        if (!skill) return false;
+
+        const jobCategoryName = skill?.jobCategory?.name;
+        if (!jobCategoryName) return false;
+        return jobCategoryName.toLowerCase().includes(keyword.toLowerCase());
+      });
     });
+
     return searchResults;
   }
 
