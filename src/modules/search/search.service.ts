@@ -43,6 +43,10 @@ export const search = async (payload: any): Promise<any> => {
 
   const getAllApplicants = await Applicant.find({}).populate('user skills.jobCategory');
 
+  if (keyword === undefined && jobCategory === undefined && userId === undefined) {
+    return getAllApplicants;
+  }
+ 
   // if userId is provided
   if (userId) {
     const searchResults = getAllApplicants.filter((applicant: any) => {
