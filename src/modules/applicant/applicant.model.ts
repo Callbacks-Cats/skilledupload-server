@@ -106,6 +106,28 @@ applicantSchema.statics.isProfileComplete = async function (userId: string): Pro
   return true;
 };
 
+/**
+ * @name howMuchProfileIsComplete
+ * @description Check how much of the user's profile is complete in percentage
+ * @param {string} userId - The user id
+ */
+applicantSchema.statics.howMuchProfileIsComplete = async function (
+  userId: string
+): Promise<number> {
+  const applicant: any = await this.findOne({ user: userId });
+  if (!applicant) {
+    return 0;
+  }
+
+  let complete = 0;
+  if (applicant.resume) complete += 25;
+  if (applicant.intro) complete += 25;
+  if (applicant?.skills.length > 0) complete += 25;
+  if (applicant.education) complete += 25;
+
+  return complete;
+};
+
 const Applicant = model<IApplicantDoc, IApplicantModel>('Applicant', applicantSchema);
 
 export default Applicant;

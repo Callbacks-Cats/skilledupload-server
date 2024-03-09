@@ -1,5 +1,4 @@
 import Joi from 'joi';
-import { objectId } from '../../validation';
 
 export const createJobPost = {
   body: Joi.object().keys({
@@ -13,8 +12,8 @@ export const createJobPost = {
     education: Joi.string().required(),
     careerLevel: Joi.string().required(),
     salary: Joi.number().required(),
-    image: Joi.string().required(),
-    createdBy: Joi.string().required().custom(objectId)
+    image: Joi.string().required()
+    // createdBy: Joi.string().required().custom(objectId)
   })
 };
 
@@ -40,8 +39,7 @@ export const updateJobPost = {
       education: Joi.string(),
       careerLevel: Joi.string(),
       salary: Joi.number(),
-      image: Joi.string(),
-      createdBy: Joi.string().custom(objectId)
+      image: Joi.string()
     })
     .min(1)
     .messages({
