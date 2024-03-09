@@ -39,26 +39,31 @@ import { Applicant } from '../applicant';
 // };
 
 export const search = async (payload: any): Promise<any> => {
-  const { keyword, jobCategory, userId } = payload;
+  const { keyword, jobCategory, userId, page, limit } = payload;
 
   const getAllApplicants = await Applicant.find({}).populate('user skills.jobCategory');
+  let searchResults: any;
+
+  if (keyword === '' && jobCategory === '' && userId === '') {
+    searchResults = getAllApplicants;
+  }
 
   if (keyword === undefined && jobCategory === undefined && userId === undefined) {
-    return getAllApplicants;
+    searchResults = getAllApplicants;
   }
 
   // if userId is provided
   if (userId) {
-    const searchResults = getAllApplicants.filter((applicant: any) => {
+    searchResults = getAllApplicants.filter((applicant: any) => {
       if (!applicant.user) return false;
       return applicant.user.id === userId;
     });
-    return searchResults;
+    // return searchResults;
   }
 
   // if name and jobCategory is provided
   if (keyword && jobCategory) {
-    const searchResults = getAllApplicants.filter((applicant: any) => {
+    searchResults = getAllApplicants.filter((applicant: any) => {
       if (!applicant.skills) return false;
       if (!applicant.user) return false;
 
@@ -74,13 +79,12 @@ export const search = async (payload: any): Promise<any> => {
 
       return firstName.includes(searchName) || lastName.includes(searchName);
     });
-    return searchResults;
+    // return searchResults;
   }
 
   // if name is provided
   if (keyword) {
-    const searchResults = getAllApplicants.filter((applicant: any) => {
-      console.log(applicant);
+    searchResults = getAllApplicants.filter((applicant: any) => {
       if (!applicant.user) return false;
 
       if (!applicant.skills) return false;
@@ -88,31 +92,72 @@ export const search = async (payload: any): Promise<any> => {
         if (!skill) return false;
 
         const jobCategoryName = skill?.jobCategory?.name;
-        console.log(jobCategoryName);
+
         if (!jobCategoryName) return false;
         return jobCategoryName.toLowerCase().includes(keyword.toLowerCase());
       });
     });
-    console.log(searchResults);
-    return searchResults;
+    // return searchResults;
   }
 
   // If jobCategory is provided
   if (jobCategory) {
-    const filteredApplicants = getAllApplicants?.filter((applicant: any) => {
-      if (!applicant.skills) return false;
-      const applicnats = applicant.skills?.map((cat: any) => {
-        if (cat?.jobCategory?._id.toString().toLowerCase() === jobCategory.toLowerCase()) {
-          return applicant;
+    searchResults = getAllApplicants.filter((applicant: any) => {
+      if (applicant.skills.length === 0) return false;
+      return applicant.skills.some((skill: any) => {
+        if (skill?.jobCategory?._id.toString() === jobCategory) {
+          return true;
+        } else {
+          return false;
         }
       });
-      return applicnats;
     });
-
-    const applicants = filteredApplicants.filter((applicant: any) => {
-      if (!applicant.user) return false;
-      return applicant.user;
-    });
-    return applicants;
   }
+
+  const formattedResults = searchResults.map((result: any) => {
+    const documentData = result._doc;
+
+    const formattedResult = {
+      education: documentData.education,
+      user: documentData.user,
+      status: documentData.status,
+      skills: documentData.skills.map((skill: any) => ({
+        name: skill.jobCategory.name,
+        description: skill.jobCategory.description,
+        image: skill.jobCategory.image,
+        createdAt: skill.jobCategory.createdAt,
+        updatedAt: skill.jobCategory.updatedAt,
+        id: skill.jobCategory.id,
+        yearsOfExperience: skill.yearsOfExperience
+      })),
+      videoResume: documentData.videoResume,
+      createdAt: documentData.createdAt,
+      updatedAt: documentData.updatedAt,
+      slug: documentData.slug,
+      intro: documentData.intro,
+      id: documentData._id
+    };
+
+    return formattedResult;
+  });
+
+  const pageLimit = limit || 10;
+  const pageNumber = page || 1;
+  const totalResults = formattedResults.length;
+  const totalPages = Math.ceil(totalResults / pageLimit);
+  const currentShowing = totalResults - (pageNumber - 1) * pageLimit;
+
+  const paginatedResults = formattedResults.slice(
+    (pageNumber - 1) * pageLimit,
+    pageNumber * pageLimit
+  );
+
+  return {
+    results: paginatedResults,
+    limit: pageLimit,
+    page: pageNumber,
+    totalResults,
+    totalPages,
+    currentItemsCount: currentShowing
+  };
 };

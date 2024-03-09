@@ -2,10 +2,13 @@ import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { catchAsync } from '../../utils';
 import { SendResponse } from '../../utils/SendRespnse';
+import { IUserDoc } from '../user/user.interface';
 import * as jobPostService from './jobPost.service';
 
 export const createJobPost = catchAsync(async (req: Request, res: Response) => {
-  const post = await jobPostService.createJobPost(req.body);
+  let paylod = req.body;
+  paylod.createdBy = (req.user as IUserDoc).id;
+  const post = await jobPostService.createJobPost(paylod);
   return SendResponse(res, true, post, httpStatus.CREATED, 'Job Post Created Successfully');
 });
 
