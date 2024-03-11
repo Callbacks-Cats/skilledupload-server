@@ -101,7 +101,7 @@ export const createUserApplicantByAdmin = {
     firstName: Joi.string().required(),
     lastName: Joi.string().required(),
     phoneNumber: Joi.string().required(),
-    resume: Joi.array().items(Joi.string()).max(3),
+    resume: Joi.string().required(),
     intro: Joi.string(),
     skills: Joi.array().items(
       Joi.object({

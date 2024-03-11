@@ -69,6 +69,8 @@ export const approveApplicantProfile = catchAsync(async (req: Request, res: Resp
 });
 
 export const createUserApplicantByAdmin = catchAsync(async (req: Request, res: Response) => {
+  console.log('Calling the controller');
+  console.log('Body --> ', req.body);
   const applicant = await applicantService.createApplicantByAdmin(req.body);
   return SendResponse(res, true, applicant, httpStatus.CREATED, 'Applicant created successfully');
 });

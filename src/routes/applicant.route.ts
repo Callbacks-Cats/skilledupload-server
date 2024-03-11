@@ -79,7 +79,7 @@ router.get(
 router.post(
   '/create-user-applicant',
   auth('createUserApplicant'),
-  validate(applicationValidation.createUserApplicantByAdmin),
+  // validate(applicationValidation.createUserApplicantByAdmin),
   applicantController.createUserApplicantByAdmin
 );
 
