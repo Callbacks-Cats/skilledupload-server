@@ -5,7 +5,8 @@ import {
   FILE_TYPES,
   RESUME_STATUS,
   SPACE_FOLDERS,
-  USER_ROLES
+  USER_ROLES,
+  USER_STATUSES
 } from '../../constants';
 import { deleteFileFromSpace, updateFileInSpace } from '../../lib';
 import { IOptions } from '../../plugin/paginate';
@@ -401,55 +402,62 @@ export const approveApplicantProfile = async (
  * @returns {Promise<IApplicantDoc>}
  */
 export const createApplicantByAdmin = async (applicantBody: any): Promise<any> => {
-  const userExist = await userService.getUserByPhone(applicantBody.phoneNumber);
-  if (userExist) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'User already exist');
-  }
-
-  // user paylaod
-  const userPayload: any = {
-    role: USER_ROLES.USER,
-    firstName: applicantBody.firstName,
-    lastName: applicantBody.lastName,
-    phoneNumber: applicantBody.phoneNumber
-  };
-
-  const password = userService.generatePassword();
-
-  userPayload['password'] = password;
-
-  const user = await userService.createUser(userPayload as any);
-
-  if (user) {
-    const applicantPayload = {
-      user: user._id,
-      status: RESUME_STATUS.APPROVED,
-      intro: applicantBody.intro || '',
-      resume: applicantBody.resume || '',
-      skills: applicantBody.skills || [],
-      videoResume: applicantBody.videoResume || []
-    };
-    const applicant: any = await Applicant.create(applicantPayload);
-    if (applicant) {
-      // TODO: send sms
-      const userData = await applicant.populate(
-        'user',
-        'firstName lastName phoneNumber profilePicture role'
-      );
+  try {
+    const userExist = await userService.getUserByPhone(applicantBody.phoneNumber);
+    if (userExist) {
+      // throw new ApiError(httpStatus.BAD_REQUEST, 'User already exist');
       return {
-        firstName: applicant.user?.firstName,
-        lastName: applicant.user?.lastName,
-        phoneNumber: applicant.user?.phoneNumber,
-        role: applicant.user?.role,
-        resume: applicant.resume,
-        intro: applicant.intro,
-        skills: applicant.skills,
-        videoResume: applicant.videoResume,
-        education: applicant.education,
-        password // TODO: Remove password from response after implementing sms.
+        message: 'User already exist',
+        success: false
       };
     }
-  }
+
+    // user paylaod
+    const userPayload: any = {
+      role: USER_ROLES.USER,
+      firstName: applicantBody.firstName,
+      lastName: applicantBody.lastName,
+      phoneNumber: applicantBody.phoneNumber,
+      status: USER_STATUSES.ACTIVE
+    };
+
+    const password = userService.generatePassword();
+
+    userPayload['password'] = password;
+
+    const user = await userService.createUser(userPayload as any);
+
+    if (user) {
+      const applicantPayload = {
+        user: user._id,
+        status: RESUME_STATUS.APPROVED,
+        intro: applicantBody.intro || '',
+        resume: applicantBody.resume || '',
+        skills: applicantBody.skills || [],
+        videoResume: applicantBody.videoResume || []
+      };
+      const applicant: any = await Applicant.create(applicantPayload);
+      if (applicant) {
+        // TODO: send sms
+        const userData = await applicant.populate(
+          'user',
+          'firstName lastName phoneNumber profilePicture role'
+        );
+        return {
+          firstName: applicant.user?.firstName,
+          lastName: applicant.user?.lastName,
+          phoneNumber: applicant.user?.phoneNumber,
+          role: applicant.user?.role,
+          resume: applicant.resume,
+          intro: applicant.intro,
+          skills: applicant.skills,
+          videoResume: applicant.videoResume,
+          education: applicant.education,
+          password // TODO: Remove password from response after implementing sms.
+        };
+      }
+    }
+  } catch (error: any) {}
 };
 
 /**
