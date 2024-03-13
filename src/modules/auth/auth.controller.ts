@@ -19,6 +19,9 @@ export const register = catchAsync(async (req: Request, res: Response) => {
 
   if (user.role === USER_ROLES.USER) {
     await applicantService.createApplicant({ user: user.id });
+    // send the sms
+    // await sendSms(user.phoneNumber as string, `Your OTP is ${otp}`);
+    // await sendSms(user.phoneNumber as string, `Your OTP is ${otp}`);
   } else if (user.role === USER_ROLES.HIRER) {
     await emailService.sendOtpVerificationEmail(user.email as string, otp);
     return SendResponse(res, true, user, httpStatus.CREATED, 'User registered successfully');
