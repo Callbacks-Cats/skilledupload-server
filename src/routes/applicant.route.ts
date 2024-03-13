@@ -10,9 +10,11 @@ import { validate } from '../validation';
 
 const router: Router = express.Router();
 
+router.get('/category-wise-applicants', applicantController.categoryWiseApplicants);
+
 router.get(
   '/',
-  auth('manageApplicant'),
+  // auth('manageApplicant'),
   validate(applicationValidation.getAllApplicants),
   applicantController.getAllApplicants
 );

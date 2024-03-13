@@ -69,8 +69,14 @@ export const approveApplicantProfile = catchAsync(async (req: Request, res: Resp
 });
 
 export const createUserApplicantByAdmin = catchAsync(async (req: Request, res: Response) => {
-  console.log('Calling the controller');
-  console.log('Body --> ', req.body);
   const applicant = await applicantService.createApplicantByAdmin(req.body);
   return SendResponse(res, true, applicant, httpStatus.CREATED, 'Applicant created successfully');
+});
+
+export const categoryWiseApplicants = catchAsync(async (req: Request, res: Response) => {
+  const result = await applicantService.categoryWiseApplicants(
+    req.query?.page as any,
+    req.query?.limit as any
+  );
+  return SendResponse(res, true, result, httpStatus.OK, 'Applicants fetched successfully');
 });

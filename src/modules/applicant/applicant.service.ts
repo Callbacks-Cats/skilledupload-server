@@ -470,3 +470,83 @@ export const queryApplicants = (filters: any, options: IOptions): Promise<any> =
   options = { ...options, populate: 'user' };
   return Applicant.paginate(filters, options);
 };
+export const categoryWiseApplicants = async (page: number, limit: number): Promise<any> => {
+  /**
+   * Fetches applicant data with populated user information,
+   * grouped by job category with counts and items.
+   */
+  const pipeline = [
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'user',
+        foreignField: '_id',
+        as: 'user'
+      }
+    },
+    {
+      $unwind: '$user'
+    },
+    // hide user password
+    {
+      $project: {
+        'user.password': 0
+      }
+    },
+    {
+      $group: {
+        _id: '$skills.jobCategory',
+        count: { $sum: 1 },
+        items: { $push: { applicant: '$$ROOT', user: '$user' } }
+      }
+    },
+    {
+      $lookup: {
+        from: 'jobcategories',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'jobCategory'
+      }
+    },
+    {
+      $unwind: '$jobCategory'
+    },
+    {
+      $project: {
+        _id: 0,
+        name: '$jobCategory.name',
+        count: 1,
+        items: {
+          $map: {
+            input: '$items',
+            as: 'item',
+            in: {
+              applicant: '$$item.applicant',
+              user: '$$item.user'
+            }
+          }
+        }
+      }
+    }
+  ];
+  const results = await Applicant.aggregate(pipeline);
+
+  // create manual pagination
+
+  const paginatePage = page || 1;
+  const paginateLimit = limit || 10;
+  const total = results.length;
+  const totalPages = Math.ceil(total / paginateLimit);
+
+  const startIndex = (paginatePage - 1) * paginateLimit;
+  const endIndex = paginatePage * paginateLimit;
+
+  const paginatedResults = results.slice(startIndex, endIndex);
+
+  return {
+    results: paginatedResults,
+    totalPages,
+    currentPage: page,
+    total
+  };
+};
