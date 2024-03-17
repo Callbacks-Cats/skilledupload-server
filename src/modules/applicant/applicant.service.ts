@@ -9,6 +9,7 @@ import {
   USER_STATUSES
 } from '../../constants';
 import { deleteFileFromSpace, updateFileInSpace } from '../../lib';
+import { sendSms } from '../../lib/twilio';
 import { IOptions } from '../../plugin/paginate';
 import { ApiError } from '../../utils';
 import { userService } from '../user';
@@ -257,7 +258,8 @@ export const uploadResume = async (userId: string, file: Buffer): Promise<IAppli
  */
 export const uploadVideoResume = async (
   userId: string,
-  file: Buffer
+  file: Buffer,
+  thumbnail: string
 ): Promise<IApplicantDoc | null> => {
   const applicant = await getApplicantByUserId(userId);
   if (!applicant) {
@@ -290,7 +292,8 @@ export const uploadVideoResume = async (
         {
           $push: {
             videoResume: {
-              file: uploadedFile.url
+              file: uploadedFile.url,
+              thumbnail: thumbnail
             }
           }
         } as Partial<IApplicantDoc>,
@@ -356,6 +359,14 @@ export const deleteVideoResumeByUser = async (
         } as Partial<IApplicantDoc>,
         { session }
       );
+
+      // delete thumbnail
+      await deleteFileFromSpace(
+        FILE_TYPES.IMAGE,
+        videoResume?.thumbnail?.split('/').pop() as string,
+        SPACE_FOLDERS.VIDEO_RESUME
+      );
+
       await session.commitTransaction();
       session.endSession();
       return (applicant as IApplicantDoc).populate('user');
@@ -443,6 +454,10 @@ export const createApplicantByAdmin = async (applicantBody: any): Promise<any> =
           'user',
           'firstName lastName phoneNumber profilePicture role'
         );
+
+        // Send SMS to user with password
+        await sendSms(applicant?.user?.phoneNumber, `Your password is: ${password}`);
+
         return {
           firstName: applicant.user?.firstName,
           lastName: applicant.user?.lastName,
@@ -452,8 +467,7 @@ export const createApplicantByAdmin = async (applicantBody: any): Promise<any> =
           intro: applicant.intro,
           skills: applicant.skills,
           videoResume: applicant.videoResume,
-          education: applicant.education,
-          password // TODO: Remove password from response after implementing sms.
+          education: applicant.education
         };
       }
     }
@@ -549,4 +563,31 @@ export const categoryWiseApplicants = async (page: number, limit: number): Promi
     currentPage: page,
     total
   };
+};
+
+export const uploadVideoResumethumbnail = async (file: Buffer): Promise<any> => {
+  console.log('file: ', file);
+
+  const currentTimestamp = new Date().getTime();
+  let fileName = `thumbnail-${currentTimestamp}.png`;
+
+  try {
+    const updatedFile = await updateFileInSpace(
+      FILE_TYPES.IMAGE,
+      file,
+      fileName,
+      SPACE_FOLDERS.THUMBNAIL,
+      CONTENT_TYPES.IMAGE
+    );
+
+    // TODO-2: Save the file url to the applicant document
+    if (updatedFile) {
+      return updatedFile?.url;
+    }
+  } catch (error) {
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Thumbnail could not be uploaded. Please try again'
+    );
+  }
 };
