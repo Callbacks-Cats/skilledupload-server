@@ -85,4 +85,11 @@ router.post(
   applicantController.createUserApplicantByAdmin
 );
 
+router.post(
+  '/uplod-resume-thumbnail',
+  auth('updateOwn'),
+  fileUploader.single('resume'),
+  applicantController.uploadVideoResumethumbnail
+);
+
 export default router;

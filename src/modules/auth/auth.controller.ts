@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { USER_ROLES, USER_STATUSES } from '../../constants';
+import { sendSms } from '../../lib/twilio';
 import { ApiError, catchAsync, logger } from '../../utils';
 import { SendResponse } from '../../utils/SendRespnse';
 import { applicantService } from '../applicant';
@@ -21,7 +22,7 @@ export const register = catchAsync(async (req: Request, res: Response) => {
     await applicantService.createApplicant({ user: user.id });
     // send the sms
     // await sendSms(user.phoneNumber as string, `Your OTP is ${otp}`);
-    // await sendSms(user.phoneNumber as string, `Your OTP is ${otp}`);
+    await sendSms(user.phoneNumber as string, `Your OTP is ${otp}`);
   } else if (user.role === USER_ROLES.HIRER) {
     await emailService.sendOtpVerificationEmail(user.email as string, otp);
     return SendResponse(res, true, user, httpStatus.CREATED, 'User registered successfully');

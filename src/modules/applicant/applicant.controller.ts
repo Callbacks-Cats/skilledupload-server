@@ -48,9 +48,11 @@ export const uploadResume = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const uploadVideoResume = catchAsync(async (req: Request, res: Response) => {
+  console.log('Body: ', req.body);
   const applicant = await applicantService.uploadVideoResume(
     (req.user as IUserDoc)?.id,
-    req?.file?.buffer as Buffer
+    req?.file?.buffer as Buffer,
+    req?.body?.thumbnail
   );
   return SendResponse(res, true, applicant, httpStatus.OK, 'Video resume uploaded successfully');
 });
@@ -79,4 +81,16 @@ export const categoryWiseApplicants = catchAsync(async (req: Request, res: Respo
     req.query?.limit as any
   );
   return SendResponse(res, true, result, httpStatus.OK, 'Applicants fetched successfully');
+});
+
+export const uploadVideoResumethumbnail = catchAsync(async (req: Request, res: Response) => {
+  console.log('req.body', req.body);
+  const thumbnail = await applicantService.uploadVideoResumethumbnail(req.body.thumbnail);
+  return SendResponse(
+    res,
+    true,
+    thumbnail,
+    httpStatus.OK,
+    'Video resume thumbnail uploaded successfully'
+  );
 });

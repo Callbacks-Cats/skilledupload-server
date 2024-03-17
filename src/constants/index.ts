@@ -33,7 +33,8 @@ export const FILE_TYPES = {
 export const SPACE_FOLDERS = {
   PROFILE_PICTURE: 'profile-pictures',
   RESUME: 'resumes',
-  VIDEO_RESUME: 'video-resumes'
+  VIDEO_RESUME: 'video-resumes',
+  THUMBNAIL: 'thumbnails'
 };
 
 export const CONTENT_TYPES = {

@@ -39,6 +39,10 @@ const applicantSchema = new Schema<IApplicantDoc, IApplicantModel>(
           //   },
           //   message: (props) => `${props.value} is not a valid URL!`
           // }
+        },
+        thumbnail: {
+          type: String,
+          default: ''
         }
       }
     ],
