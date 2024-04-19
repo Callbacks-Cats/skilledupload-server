@@ -1,12 +1,8 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { USER_ROLES, USER_STATUSES } from '../../constants';
-import { sendSms } from '../../lib/twilio';
 import { ApiError, catchAsync, logger } from '../../utils';
 import { SendResponse } from '../../utils/SendRespnse';
-import { applicantService } from '../applicant';
-import { emailService } from '../email';
-import { otpService } from '../otp';
 import { tokenService } from '../token';
 import { userService } from '../user';
 import * as authService from './auth.service';
@@ -16,19 +12,19 @@ export const register = catchAsync(async (req: Request, res: Response) => {
   const user = await userService.registerUser(req.body);
 
   // Generate auth otp codes
-  const otp = await otpService.generateOtp(user.id);
+  // const otp = await otpService.generateOtp(user.id);
 
-  if (user.role === USER_ROLES.USER) {
-    await applicantService.createApplicant({ user: user.id });
-    // send the sms
-    // await sendSms(user.phoneNumber as string, `Your OTP is ${otp}`);
-    await sendSms(user.phoneNumber as string, `Your OTP is ${otp}`);
-  } else if (user.role === USER_ROLES.HIRER) {
-    await emailService.sendOtpVerificationEmail(user.email as string, otp);
-    return SendResponse(res, true, user, httpStatus.CREATED, 'User registered successfully');
-  }
+  // if (user.role === USER_ROLES.USER) {
+  //   await applicantService.createApplicant({ user: user.id });
+  //   // send the sms
+  //   // await sendSms(user.phoneNumber as string, `Your OTP is ${otp}`);
+  //   await sendSms(user.phoneNumber as string, `Your OTP is ${otp}`);
+  // } else if (user.role === USER_ROLES.HIRER) {
+  //   await emailService.sendOtpVerificationEmail(user.email as string, otp);
+  //   return SendResponse(res, true, user, httpStatus.CREATED, 'User registered successfully');
+  // }
 
-  return SendResponse(res, true, { user, otp }, httpStatus.CREATED, 'User registered successfully');
+  return SendResponse(res, true, user, httpStatus.CREATED, 'User registered successfully');
 });
 
 export const login = catchAsync(async (req: Request, res: Response) => {

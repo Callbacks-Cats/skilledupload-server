@@ -2,6 +2,7 @@ import twilio from 'twilio';
 
 let ssid = 'ACe52f20d64810819cc28578a622c46b2a';
 let authToken = 'ad12c47aac7e6275bd9a12d14d0efc69';
+
 let from = '+15165060649';
 const client = twilio(ssid, authToken);
 
@@ -16,11 +17,11 @@ export const verifyNumber = async (to: string) => {
 
 export const sendSms = async (to: string, msg: string) => {
   try {
-    client.verify.v2.services
-      .create({ friendlyName: 'My First Verify Service' })
-      .then((service) => console.log(service.sid));
+    // client.verify.v2.services
+    //   .create({ friendlyName: 'My First Verify Service' })
+    //   .then((service) => console.log(service.sid));
 
-    const verified = verifyNumber(to);
+    // const verified = verifyNumber(to);
 
     const message = await client.messages.create({
       body: msg,
