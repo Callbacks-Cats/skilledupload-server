@@ -1,3 +1,5 @@
+# SKILLEDUPLOAD-API is the name of the process in the pm2 ecosystem file
+
 name: API CI/CD
 
 on:
