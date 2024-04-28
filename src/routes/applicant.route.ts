@@ -37,7 +37,7 @@ router.patch(
 router.patch(
   '/upload-video-resume',
   auth('uploadResume'),
-  // applicantMiddleware.isVideoResumeLimitExceeded,
+  applicantMiddleware.isVideoResumeLimitExceeded,
   fileUploader.single('video'),
   applicantController.uploadVideoResume
 );

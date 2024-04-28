@@ -3,6 +3,7 @@ import httpStatus from 'http-status';
 import { USER_ROLES, USER_STATUSES } from '../../constants';
 import { ApiError, catchAsync, logger } from '../../utils';
 import { SendResponse } from '../../utils/SendRespnse';
+import { applicantService } from '../applicant';
 import { tokenService } from '../token';
 import { userService } from '../user';
 import * as authService from './auth.service';
@@ -14,15 +15,15 @@ export const register = catchAsync(async (req: Request, res: Response) => {
   // Generate auth otp codes
   // const otp = await otpService.generateOtp(user.id);
 
-  // if (user.role === USER_ROLES.USER) {
-  //   await applicantService.createApplicant({ user: user.id });
-  //   // send the sms
-  //   // await sendSms(user.phoneNumber as string, `Your OTP is ${otp}`);
-  //   await sendSms(user.phoneNumber as string, `Your OTP is ${otp}`);
-  // } else if (user.role === USER_ROLES.HIRER) {
-  //   await emailService.sendOtpVerificationEmail(user.email as string, otp);
-  //   return SendResponse(res, true, user, httpStatus.CREATED, 'User registered successfully');
-  // }
+  if (user.role === USER_ROLES.USER) {
+    await applicantService.createApplicant({ user: user.id });
+    // send the sms
+    // await sendSms(user.phoneNumber as string, `Your OTP is ${otp}`);
+    // await sendSms(user.phoneNumber as string, `Your OTP is ${otp}`);
+  } else if (user.role === USER_ROLES.HIRER) {
+    // await emailService.sendOtpVerificationEmail(user.email as string, otp);
+    return SendResponse(res, true, user, httpStatus.CREATED, 'User registered successfully');
+  }
 
   return SendResponse(res, true, user, httpStatus.CREATED, 'User registered successfully');
 });
