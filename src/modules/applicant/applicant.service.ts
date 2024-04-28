@@ -446,7 +446,8 @@ export const createApplicantByAdmin = async (applicantBody: any): Promise<any> =
         resume: applicantBody.resume || '',
         skills: applicantBody.skills || [],
         videoResume: applicantBody.videoResume || [],
-        education: applicantBody.education || {}
+        education: applicantBody.education || {},
+        thumbnail: applicantBody.thumbnail || ''
       };
       const applicant: any = await Applicant.create(applicantPayload);
       if (applicant) {

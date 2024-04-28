@@ -59,6 +59,10 @@ const applicantSchema = new Schema<IApplicantDoc, IApplicantModel>(
       enum: Object.values(RESUME_STATUS),
       default: RESUME_STATUS.PENDING
     },
+    thumbnail: {
+      type: String,
+      default: ''
+    },
     slug: {
       type: String,
       unique: true

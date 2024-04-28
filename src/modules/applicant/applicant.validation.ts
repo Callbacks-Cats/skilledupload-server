@@ -113,7 +113,8 @@ export const createUserApplicantByAdmin = {
     education: Joi.object({
       title: Joi.string().required(),
       year: Joi.number().required()
-    })
+    }),
+    thumbnail: Joi.string()
   })
 };
 
