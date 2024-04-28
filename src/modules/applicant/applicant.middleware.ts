@@ -4,7 +4,6 @@ import { USER_ROLES } from '../../constants';
 import { ApiError } from '../../utils';
 import { User } from '../user';
 import { IUserDoc } from '../user/user.interface';
-import Applicant from './applicant.model';
 import { getApplicantByUserId } from './applicant.service';
 
 export const isUserRole = async (req: Request, res: Response, next: NextFunction) => {
@@ -34,9 +33,7 @@ export const isVideoResumeLimitExceeded = async (
     const userId = (req.user as IUserDoc)?.id;
     const applicant = await getApplicantByUserId(userId);
     if (!applicant) {
-      // throw new ApiError(httpStatus.NOT_FOUND, 'Applicant not found');
-      // create a new Applicant here
-      Applicant.create({ user: userId });
+      throw new ApiError(httpStatus.NOT_FOUND, 'Applicant not found');
     }
 
     if (!applicant.videoResume) {
