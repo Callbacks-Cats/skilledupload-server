@@ -9,7 +9,6 @@ import {
   USER_STATUSES
 } from '../../constants';
 import { deleteFileFromSpace, updateFileInSpace } from '../../lib';
-import { sendSms } from '../../lib/twilio';
 import { IOptions } from '../../plugin/paginate';
 import { ApiError } from '../../utils';
 import { userService } from '../user';
@@ -445,10 +444,11 @@ export const createApplicantByAdmin = async (applicantBody: any): Promise<any> =
         intro: applicantBody.intro || '',
         resume: applicantBody.resume || '',
         skills: applicantBody.skills || [],
-        videoResume: applicantBody.videoResume || [],
+        videoResume: applicantBody.videoresume,
         education: applicantBody.education || {},
         thumbnail: applicantBody.thumbnail || ''
       };
+
       const applicant: any = await Applicant.create(applicantPayload);
       if (applicant) {
         // TODO: send sms
@@ -456,9 +456,6 @@ export const createApplicantByAdmin = async (applicantBody: any): Promise<any> =
           'user',
           'firstName lastName phoneNumber profilePicture role'
         );
-
-        // Send SMS to user with password
-        await sendSms(applicant?.user?.phoneNumber, `Your password is: ${password}`);
 
         return {
           firstName: applicant.user?.firstName,
