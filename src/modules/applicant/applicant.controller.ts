@@ -48,7 +48,6 @@ export const uploadResume = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const uploadVideoResume = catchAsync(async (req: Request, res: Response) => {
-  console.log('Body: ', req.body);
   const applicant = await applicantService.uploadVideoResume(
     (req.user as IUserDoc)?.id,
     req?.file?.buffer as Buffer,
