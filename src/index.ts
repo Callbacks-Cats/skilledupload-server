@@ -8,7 +8,7 @@ let server: Server;
 mongoose.connect(config.mongoose.url as string).then(() => {
   logger.info(`😊 Databased is connected!`);
   server = app.listen(config.port, () => {
-    logger.info(`Server is started at ${config.port}`);
+    logger.info(`Listening to port ${config.port}`);
   });
 });
 
