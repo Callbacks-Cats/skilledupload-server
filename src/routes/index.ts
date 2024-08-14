@@ -2,8 +2,12 @@ import { Router } from 'express';
 import config from '../config';
 import applicantRoute from './applicant.route';
 import authRoutes from './auth.route';
+import bannerConfigRoute from './bannerConfig.route';
 import docsRoutes from './docs.routes';
 import jobCategoryRoutes from './jobCategory.route';
+import jobPostRoute from './jobPost.route';
+import searchRoute from './search.route';
+import storageRoute from './storage.route';
 import userRoutes from './user.route';
 
 const router = Router();
@@ -35,6 +39,22 @@ const devIRoute: IRoute[] = [
   {
     path: '/job-category',
     router: jobCategoryRoutes
+  },
+  {
+    path: '/job-post',
+    router: jobPostRoute
+  },
+  {
+    path: '/storage',
+    router: storageRoute
+  },
+  {
+    path: '/banner-config',
+    router: bannerConfigRoute
+  },
+  {
+    path: '/search',
+    router: searchRoute
   }
 ];
 

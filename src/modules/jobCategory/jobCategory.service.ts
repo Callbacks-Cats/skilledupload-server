@@ -1,3 +1,5 @@
+import httpStatus from 'http-status';
+import { ApiError } from '../../utils';
 import { IJobCategoryBody, IJobCategoryDoc, UpdateJobCategoryBody } from './jobCategory.interface';
 import JobCategory from './jobCategory.model';
 
@@ -48,4 +50,17 @@ export const updateJobCategory = async (
  */
 export const deleteJobCategory = async (id: string): Promise<IJobCategoryDoc | null> => {
   return JobCategory.findByIdAndDelete(id);
+};
+
+/**
+ * Get category by id
+ * @param {string} id - The id of the category
+ * @returns {Promise<IJobCategoryDoc>} - The category
+ */
+export const getCategoryById = async (id: string): Promise<IJobCategoryDoc | null> => {
+  const category = await JobCategory.findOne({ _id: id });
+  if (!category) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
+  }
+  return category;
 };

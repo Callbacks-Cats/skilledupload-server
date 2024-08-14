@@ -4,7 +4,10 @@ import { objectId } from '../../validation';
 export const createJobCategory = {
   body: Joi.object().keys({
     name: Joi.string().required(),
-    description: Joi.string()
+    description: Joi.string(),
+    image: Joi.string().required().messages({
+      'any.required': 'Image is required'
+    })
   })
 };
 
@@ -15,7 +18,8 @@ export const updateJobCategory = {
   body: Joi.object()
     .keys({
       name: Joi.string(),
-      description: Joi.string()
+      description: Joi.string(),
+      image: Joi.string()
     })
     .min(1)
     .messages({
@@ -24,6 +28,12 @@ export const updateJobCategory = {
 };
 
 export const deleteJobCategory = {
+  params: Joi.object().keys({
+    id: Joi.string().required().custom(objectId)
+  })
+};
+
+export const getJobCategoryById = {
   params: Joi.object().keys({
     id: Joi.string().required().custom(objectId)
   })

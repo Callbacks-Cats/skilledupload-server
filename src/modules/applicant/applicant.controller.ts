@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { ApiError, catchAsync } from '../../utils';
+import { ApiError, catchAsync, pick } from '../../utils';
 import { SendResponse } from '../../utils/SendRespnse';
 import { IUserDoc } from '../user/user.interface';
 import * as applicantService from './applicant.service';
@@ -23,9 +23,19 @@ export const getApplicant = catchAsync(async (req: Request, res: Response) => {
   return SendResponse(res, true, applicant, httpStatus.OK, 'Applicant fetched successfully');
 });
 
-export const uploadResume = catchAsync(async (req: Request, res: Response) => {
-  console.log(req.file, 'req.file');
+export const getApplicantBySlug = catchAsync(async (req: Request, res: Response) => {
+  const applicant = await applicantService.getApplicantBySlug(req.params.slug);
+  return SendResponse(res, true, applicant, httpStatus.OK, 'Applicant fetched successfully');
+});
 
+export const getAllApplicants = catchAsync(async (req: Request, res: Response) => {
+  const filters = pick(req.query, ['status']);
+  const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  const result = await applicantService.queryApplicants(filters, options);
+  return SendResponse(res, true, result, httpStatus.OK, 'Applicants fetched successfully');
+});
+
+export const uploadResume = catchAsync(async (req: Request, res: Response) => {
   if (!req?.file) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Please upload a resume');
   }
@@ -40,7 +50,8 @@ export const uploadResume = catchAsync(async (req: Request, res: Response) => {
 export const uploadVideoResume = catchAsync(async (req: Request, res: Response) => {
   const applicant = await applicantService.uploadVideoResume(
     (req.user as IUserDoc)?.id,
-    req?.file?.buffer as Buffer
+    req?.file?.buffer as Buffer,
+    req?.body?.thumbnail
   );
   return SendResponse(res, true, applicant, httpStatus.OK, 'Video resume uploaded successfully');
 });
@@ -56,4 +67,29 @@ export const deleteVideoResumeByUser = catchAsync(async (req: Request, res: Resp
 export const approveApplicantProfile = catchAsync(async (req: Request, res: Response) => {
   const applicant = await applicantService.approveApplicantProfile(req.params.applicantId);
   return SendResponse(res, true, applicant, httpStatus.OK, 'Applicant approved successfully');
+});
+
+export const createUserApplicantByAdmin = catchAsync(async (req: Request, res: Response) => {
+  const applicant = await applicantService.createApplicantByAdmin(req.body);
+  return SendResponse(res, true, applicant, httpStatus.CREATED, 'Applicant created successfully');
+});
+
+export const categoryWiseApplicants = catchAsync(async (req: Request, res: Response) => {
+  const result = await applicantService.categoryWiseApplicants(
+    req.query?.page as any,
+    req.query?.limit as any
+  );
+  return SendResponse(res, true, result, httpStatus.OK, 'Applicants fetched successfully');
+});
+
+export const uploadVideoResumethumbnail = catchAsync(async (req: Request, res: Response) => {
+  console.log('req.body', req.body);
+  const thumbnail = await applicantService.uploadVideoResumethumbnail(req.body.thumbnail);
+  return SendResponse(
+    res,
+    true,
+    thumbnail,
+    httpStatus.OK,
+    'Video resume thumbnail uploaded successfully'
+  );
 });

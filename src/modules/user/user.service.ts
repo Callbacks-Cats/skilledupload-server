@@ -1,7 +1,8 @@
 import httpStatus from 'http-status';
+import moment from 'moment';
 import mongoose, { Types } from 'mongoose';
 import { CONTENT_TYPES, FILE_TYPES, SPACE_FOLDERS, USER_ROLES } from '../../constants';
-import { updateFileInSpace } from '../../lib';
+import { deleteFileFromSpace, updateFileInSpace } from '../../lib';
 import { resizeImage } from '../../lib/media.manipulation';
 import { ApiError } from '../../utils';
 import { IUserDoc, NewCreatedUser, UpdateUserBody } from './user.interface';
@@ -25,8 +26,6 @@ export const createUser = async (userBody: NewCreatedUser): Promise<IUserDoc> =>
  * @returns {Promise<IUserDoc>}
  */
 export const registerUser = async (userBody: NewCreatedUser): Promise<IUserDoc> => {
-  // if  user body has phone number or email then check that already have an user based on phoneNumber and email
-
   if (userBody?.role === USER_ROLES.HIRER) {
     if (await User.isEmailTaken(userBody?.email as string)) {
       throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
@@ -103,13 +102,13 @@ export const updateProfilePicture = async (
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
-  const fileName = `${userId}.jpg`;
+  const oldImage = user.profilePicture;
+  const currentTimeStamp = moment().format('YYYY-MM-DD-HH-mm-ss');
+
+  const fileName = `${userId}-${currentTimeStamp}.jpg`;
   const resizedImage = await resizeImage(profilePicture, { width: 250, height: 250 });
 
-  const session = await mongoose.startSession();
-
   try {
-    session.startTransaction();
     const uploadedImage = await updateFileInSpace(
       FILE_TYPES.IMAGE,
       resizedImage,
@@ -118,20 +117,45 @@ export const updateProfilePicture = async (
       CONTENT_TYPES.IMAGE
     );
     if (uploadedImage) {
-      user = await updateUserById(
-        userId.toString(),
-        { profilePicture: uploadedImage.url },
-        { session }
+      await deleteFileFromSpace(
+        FILE_TYPES.IMAGE,
+        oldImage as string,
+        SPACE_FOLDERS.PROFILE_PICTURE
       );
+      user = await updateUserById(userId.toString(), { profilePicture: uploadedImage.url });
     }
-
-    await session.commitTransaction();
-    session.endSession();
 
     return user;
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
     throw error;
   }
+};
+
+/**
+ * Generate a random password
+ * @returns {string}
+ */
+export const generatePassword = () => {
+  var length = 10;
+  var capitalLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  var lowercaseLetters = 'abcdefghijklmnopqrstuvwxyz';
+  var numbers = '0123456789';
+  var specialCharacters = '@#$%&';
+  var charset = capitalLetters + lowercaseLetters + numbers + specialCharacters;
+  var password = '';
+  password += capitalLetters.charAt(Math.floor(Math.random() * capitalLetters.length));
+  password += lowercaseLetters.charAt(Math.floor(Math.random() * lowercaseLetters.length));
+  password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+  for (var i = 3; i < length; i++) {
+    var charIndex = Math.floor(Math.random() * charset.length);
+    password += charset.charAt(charIndex);
+  }
+  password = password
+    .split('')
+    .sort(function () {
+      return 0.5 - Math.random();
+    })
+    .join('');
+
+  return password;
 };

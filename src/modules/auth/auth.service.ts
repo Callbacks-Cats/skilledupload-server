@@ -1,7 +1,8 @@
 import httpStatus from 'http-status';
 import { Types } from 'mongoose';
-import { USER_STATUSES } from '../../constants';
+import { USER_ROLES, USER_STATUSES } from '../../constants';
 import { ApiError } from '../../utils';
+import { emailService } from '../email';
 import { otpService } from '../otp';
 import Otp from '../otp/otp.model';
 import { Token, tokenService, tokenTypes } from '../token';
@@ -43,23 +44,57 @@ export const loginUserWithPhoneNumber = async (
 };
 
 /**
+ * Forgot password request via email & sms top
+ * @param {any} req.body
+ * @returns {Promise<void>}
+ */
+export const forgotPassword = async (body: {
+  email?: string;
+  phoneNumber?: string;
+  role: string;
+}) => {
+  let user;
+
+  if (body.role === USER_ROLES.HIRER) {
+    user = await getUserByEmail(body.email as string);
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'No user found with this email');
+    }
+    const otp = await otpService.generateOtp(user?.id as string);
+    await emailService.sendForgotPasswordOtpEmail(user?.email as string, otp);
+    return user;
+  } else if (body.role === USER_ROLES.USER) {
+    user = await getUserByPhone(body.phoneNumber as string);
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'No user found with this phone number');
+    }
+    const otp = await otpService.generateOtp(user?.id as string);
+    return { user, otp }; // TODO: Remove otp from here after implementing sms otp feature
+  }
+};
+
+/**
  * Reset password
  * @param {string} resetPasswordToken
  * @param {string} newPassword
  * @returns {Promise<void>}
  */
-export const resetPassword = async (resetPasswordToken: string, newPassword: string) => {
+export const resetPassword = async (body: { otp: number; password: string }) => {
   try {
-    const resetPasswordTokenDoc = await tokenService.verifyToken(
-      resetPasswordToken,
-      tokenTypes.RESET_PASSWORD
-    );
-    const user = await getUserById(new Types.ObjectId(resetPasswordTokenDoc.user));
-    if (!user) {
-      throw new ApiError(httpStatus.NOT_FOUND, 'No user found with this token');
+    const otpDoc = await otpService.verifyOtp(body.otp.toString());
+    if (!otpDoc) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid otp');
     }
-    await updateUserById(user.id, { password: newPassword });
-    await Token.deleteMany({ user: user.id, type: tokenTypes.RESET_PASSWORD });
+    if (otpDoc.isDepreciated) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'Otp is already used');
+    }
+    const user = await getUserById(new Types.ObjectId(otpDoc.user));
+    if (!user) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'No user found with this otp');
+    }
+    await user.changePassword(body.password);
+    await Otp.deleteMany({ user: user.id });
+    return user;
   } catch (error) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Password reset failed');
   }
@@ -76,7 +111,7 @@ export const verifyEmail = async (verifyEmailToken: string): Promise<IUserDoc | 
       verifyEmailToken,
       tokenTypes.VERIFY_EMAIL
     );
-    console.log('verifyEmailTokenDoc', verifyEmailTokenDoc);
+
     const user = await getUserById(new Types.ObjectId(verifyEmailTokenDoc.user));
     if (!user) {
       throw new ApiError(httpStatus.NOT_FOUND, 'No user found with this token');
@@ -103,4 +138,22 @@ export const verifyOtp = async (otp: string): Promise<IUserDoc | null> => {
   const updatedUser = await updateUserById(user.id, { status: USER_STATUSES.ACTIVE });
   await Otp.deleteMany({ user: user.id });
   return updatedUser;
+};
+
+/**
+ * Change password
+ * @param {string} userId
+ * @param {{oldPassword: string, newPassword: string}} body
+ * @returns {Promise<IUserDoc>}
+ */
+export const changePassword = async (
+  userId: string,
+  body: { oldPassword: string; newPassword: string }
+): Promise<IUserDoc> => {
+  const user = await getUserById(new Types.ObjectId(userId));
+  if (!user || !(await user.isPasswordMatch(body.oldPassword))) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Incorrect old password');
+  }
+  await user.changePassword(body.newPassword);
+  return user;
 };

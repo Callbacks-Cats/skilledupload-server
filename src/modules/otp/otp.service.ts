@@ -44,6 +44,10 @@ export const verifyOtp = async (otp: string): Promise<IOtpDoc> => {
   if (!otpDoc) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Otp verification failed');
   }
+  if (otpDoc.isDepreciated) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Otp is already used');
+  }
+  await otpDoc.updateOne({ isDepreciated: true });
   return otpDoc;
 };
 

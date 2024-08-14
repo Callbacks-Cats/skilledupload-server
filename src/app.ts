@@ -1,7 +1,7 @@
 import compression from 'compression';
 import cors from 'cors';
 import express from 'express';
-// import fileUploader from 'express-fileupload';
+import fs from 'fs';
 import helmet from 'helmet';
 import httpStatus from 'http-status';
 import passport from 'passport';
@@ -21,8 +21,17 @@ if (config.env !== 'test') {
   app.use(morgan.errorHandler);
 }
 
+// create /public folder if it doesn't exist
+const dir = './public';
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir);
+}
+
 // set security HTTP headers
 app.use(helmet());
+
+// serve the static files
+app.use('/public', express.static('public'));
 
 // parse json request body
 app.use(express.json({ limit: '3000mb' }));
@@ -30,12 +39,6 @@ app.use(express.json({ limit: '3000mb' }));
 // parse urlencoded request body
 app.use(express.urlencoded({ extended: true }));
 app.use(express.text({ limit: '300mb' }));
-// app.use(
-//   fileUploader({
-//     useTempFiles: true,
-//     tempFileDir: '/tmp/uploads' // Adjust if needed
-//   })
-// );
 
 // sanitize request data
 app.use(xss());
@@ -46,22 +49,12 @@ app.use(compression());
 // enable cors
 app.use(
   cors({
-    origin: 'http://localhost:3000', // Specify the allowed origin
-    credentials: true // Allow sending cookies and credentials
+    origin: '*'
   })
 );
 
-// TODO: Test endpoint for testing the CI/CD pipeline. Remove this endpoint in production
-app.get('/', (req, res) => {
-  return res.status(200).json({
-    message: 'Welcome to the API',
-    status: 'success',
-    code: 200
-  });
-});
-
 // api docs
-app.use('/docs', swagger.serve, swagger.setup(specs));
+app.use('/api/docs', swagger.serve, swagger.setup(specs, {}));
 
 // jwt authentication
 app.use(passport.initialize());

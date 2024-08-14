@@ -10,7 +10,15 @@ import { validate } from '../validation';
 
 const router: Router = express.Router();
 
-// test route
+router.get('/category-wise-applicants', applicantController.categoryWiseApplicants);
+
+router.get(
+  '/',
+  // auth('manageApplicant'),
+  validate(applicationValidation.getAllApplicants),
+  applicantController.getAllApplicants
+);
+
 router.post(
   '/',
   auth('updateOwn'),
@@ -62,6 +70,26 @@ router.get(
   auth('manageApplicant'),
   validate(applicationValidation.getApplicantByUserId),
   applicantController.getApplicant
+);
+
+router.get(
+  '/applicant/:slug',
+  validate(applicationValidation.getApplicantBySlug),
+  applicantController.getApplicantBySlug
+);
+
+router.post(
+  '/create-user-applicant',
+  auth('createUserApplicant'),
+  // validate(applicationValidation.createUserApplicantByAdmin),
+  applicantController.createUserApplicantByAdmin
+);
+
+router.post(
+  '/uplod-resume-thumbnail',
+  auth('updateOwn'),
+  fileUploader.single('resume'),
+  applicantController.uploadVideoResumethumbnail
 );
 
 export default router;

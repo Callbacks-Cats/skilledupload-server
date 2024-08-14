@@ -1,7 +1,15 @@
 import httpStatus from 'http-status';
 import mongoose, { Types } from 'mongoose';
-import { CONTENT_TYPES, FILE_TYPES, RESUME_STATUS, SPACE_FOLDERS } from '../../constants';
+import {
+  CONTENT_TYPES,
+  FILE_TYPES,
+  RESUME_STATUS,
+  SPACE_FOLDERS,
+  USER_ROLES,
+  USER_STATUSES
+} from '../../constants';
 import { deleteFileFromSpace, updateFileInSpace } from '../../lib';
+import { IOptions } from '../../plugin/paginate';
 import { ApiError } from '../../utils';
 import { userService } from '../user';
 import { IApplicantBody, IApplicantDoc } from './applicant.interface';
@@ -53,6 +61,51 @@ export const getApplicantByUserId = async (userId: string): Promise<any> => {
     }),
     videoResume: applicant?.videoResume,
     education: applicant?.education
+  };
+  return data;
+};
+
+/**
+ * Get applicant by userId
+ * @param {string} slug
+ * @returns {Promise<IApplicantDoc>}
+ */
+export const getApplicantBySlug = async (slug: string): Promise<any> => {
+  const applicant = await Applicant.findOne({ slug: slug }).populate({
+    path: 'skills.jobCategory',
+    select: 'name _id'
+  });
+
+  const user = await userService.getUserById(applicant?.user as any);
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  if (!applicant) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Applicant not found');
+  }
+
+  const data = {
+    id: user?._id,
+    firstName: user?.firstName,
+    lastName: user?.lastName,
+    phoneNumber: user?.phoneNumber,
+    role: user?.role,
+    status: applicant?.status,
+    resume: applicant?.resume,
+    intro: applicant?.intro,
+    skills: applicant?.skills?.map((skill: any) => {
+      // @ts-ignore
+      return {
+        name: skill?.jobCategory?.name,
+        yearsOfExperience: skill?.yearsOfExperience,
+        id: skill?.jobCategory?._id
+      };
+    }),
+    videoResume: applicant?.videoResume,
+    education: applicant?.education,
+    slug: applicant?.slug
   };
   return data;
 };
@@ -122,7 +175,6 @@ export const udpateApplicantByUserId = async (
   if (!applicant) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Applicant not found');
   }
-  console.log('applicantBody', applicantBody);
   applicant = await Applicant.findOneAndUpdate(
     { user: userId },
     { ...applicantBody },
@@ -186,6 +238,7 @@ export const uploadResume = async (userId: string, file: Buffer): Promise<IAppli
       return (updatedApplicant as IApplicantDoc).populate('user');
     }
   } catch (error) {
+    console.log('Error: ', error);
     await session.abortTransaction();
     session.endSession();
     throw new ApiError(
@@ -204,7 +257,8 @@ export const uploadResume = async (userId: string, file: Buffer): Promise<IAppli
  */
 export const uploadVideoResume = async (
   userId: string,
-  file: Buffer
+  file: Buffer,
+  thumbnail: string
 ): Promise<IApplicantDoc | null> => {
   const applicant = await getApplicantByUserId(userId);
   if (!applicant) {
@@ -237,7 +291,8 @@ export const uploadVideoResume = async (
         {
           $push: {
             videoResume: {
-              file: uploadedFile.url
+              file: uploadedFile.url,
+              thumbnail: thumbnail
             }
           }
         } as Partial<IApplicantDoc>,
@@ -303,6 +358,14 @@ export const deleteVideoResumeByUser = async (
         } as Partial<IApplicantDoc>,
         { session }
       );
+
+      // delete thumbnail
+      await deleteFileFromSpace(
+        FILE_TYPES.IMAGE,
+        videoResume?.thumbnail?.split('/').pop() as string,
+        SPACE_FOLDERS.VIDEO_RESUME
+      );
+
       await session.commitTransaction();
       session.endSession();
       return (applicant as IApplicantDoc).populate('user');
@@ -341,4 +404,189 @@ export const approveApplicantProfile = async (
   });
 
   return (applicant as IApplicantDoc).populate('user');
+};
+
+/**
+ * Create a new applicant by admin
+ * @param {IApplicantBody} applicantBody
+ * @returns {Promise<IApplicantDoc>}
+ */
+export const createApplicantByAdmin = async (applicantBody: any): Promise<any> => {
+  try {
+    const userExist = await userService.getUserByPhone(applicantBody.phoneNumber);
+    if (userExist) {
+      // throw new ApiError(httpStatus.BAD_REQUEST, 'User already exist');
+      return {
+        message: 'User already exist',
+        success: false
+      };
+    }
+
+    // user paylaod
+    const userPayload: any = {
+      role: USER_ROLES.USER,
+      firstName: applicantBody.firstName,
+      lastName: applicantBody.lastName,
+      phoneNumber: applicantBody.phoneNumber,
+      status: USER_STATUSES.ACTIVE
+    };
+
+    const password = userService.generatePassword();
+
+    userPayload['password'] = password;
+
+    const user = await userService.createUser(userPayload as any);
+
+    if (user) {
+      const applicantPayload = {
+        user: user._id,
+        status: RESUME_STATUS.APPROVED,
+        intro: applicantBody.intro || '',
+        resume: applicantBody.resume || '',
+        skills: applicantBody.skills || [],
+        videoResume: applicantBody.videoresume,
+        education: applicantBody.education || {},
+        thumbnail: applicantBody.thumbnail || ''
+      };
+
+      const applicant: any = await Applicant.create(applicantPayload);
+      if (applicant) {
+        // TODO: send sms
+        const userData = await applicant.populate(
+          'user',
+          'firstName lastName phoneNumber profilePicture role'
+        );
+
+        return {
+          firstName: applicant.user?.firstName,
+          lastName: applicant.user?.lastName,
+          phoneNumber: applicant.user?.phoneNumber,
+          role: applicant.user?.role,
+          resume: applicant.resume,
+          intro: applicant.intro,
+          skills: applicant.skills,
+          videoResume: applicant.videoResume,
+          education: applicant.education
+        };
+      }
+    }
+  } catch (error: any) {}
+};
+
+/**
+ * Get All Applicants
+ * @param {IOptions} options
+ * @param {filters} filters
+ * @returns {Promise<any>}
+ */
+export const queryApplicants = (filters: any, options: IOptions): Promise<any> => {
+  options = { ...options, populate: 'user' };
+  return Applicant.paginate(filters, options);
+};
+export const categoryWiseApplicants = async (page: number, limit: number): Promise<any> => {
+  /**
+   * Fetches applicant data with populated user information,
+   * grouped by job category with counts and items.
+   */
+  const pipeline = [
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'user',
+        foreignField: '_id',
+        as: 'user'
+      }
+    },
+    {
+      $unwind: '$user'
+    },
+    // hide user password
+    {
+      $project: {
+        'user.password': 0
+      }
+    },
+    {
+      $group: {
+        _id: '$skills.jobCategory',
+        count: { $sum: 1 },
+        items: { $push: { applicant: '$$ROOT', user: '$user' } }
+      }
+    },
+    {
+      $lookup: {
+        from: 'jobcategories',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'jobCategory'
+      }
+    },
+    {
+      $unwind: '$jobCategory'
+    },
+    {
+      $project: {
+        _id: 0,
+        name: '$jobCategory.name',
+        count: 1,
+        items: {
+          $map: {
+            input: '$items',
+            as: 'item',
+            in: {
+              applicant: '$$item.applicant',
+              user: '$$item.user'
+            }
+          }
+        }
+      }
+    }
+  ];
+  const results = await Applicant.aggregate(pipeline);
+
+  // create manual pagination
+
+  const paginatePage = page || 1;
+  const paginateLimit = limit || 10;
+  const total = results.length;
+  const totalPages = Math.ceil(total / paginateLimit);
+
+  const startIndex = (paginatePage - 1) * paginateLimit;
+  const endIndex = paginatePage * paginateLimit;
+
+  const paginatedResults = results.slice(startIndex, endIndex);
+
+  return {
+    results: paginatedResults,
+    totalPages,
+    currentPage: page,
+    total
+  };
+};
+
+export const uploadVideoResumethumbnail = async (file: Buffer): Promise<any> => {
+  console.log('file: ', file);
+
+  const currentTimestamp = new Date().getTime();
+  let fileName = `thumbnail-${currentTimestamp}.png`;
+
+  try {
+    const updatedFile = await updateFileInSpace(
+      FILE_TYPES.IMAGE,
+      file,
+      fileName,
+      SPACE_FOLDERS.THUMBNAIL,
+      CONTENT_TYPES.IMAGE
+    );
+
+    // TODO-2: Save the file url to the applicant document
+    if (updatedFile) {
+      return updatedFile?.url;
+    }
+  } catch (error) {
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Thumbnail could not be uploaded. Please try again'
+    );
+  }
 };

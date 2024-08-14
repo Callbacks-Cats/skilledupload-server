@@ -33,11 +33,18 @@ export const FILE_TYPES = {
 export const SPACE_FOLDERS = {
   PROFILE_PICTURE: 'profile-pictures',
   RESUME: 'resumes',
-  VIDEO_RESUME: 'video-resumes'
+  VIDEO_RESUME: 'video-resumes',
+  THUMBNAIL: 'thumbnails'
 };
 
 export const CONTENT_TYPES = {
   IMAGE: 'image/jpeg',
   VIDEO: 'video/mp4',
   FILE: 'application/pdf'
+};
+
+export const JOB_POST_STATUSES = {
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected'
 };

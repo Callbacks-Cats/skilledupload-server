@@ -32,12 +32,17 @@ const applicantSchema = new Schema<IApplicantDoc, IApplicantModel>(
       {
         file: {
           type: String,
-          validate: {
-            validator: function (v: string) {
-              return /^(http|https):\/\/[^ "]+$/.test(v);
-            },
-            message: (props) => `${props.value} is not a valid URL!`
-          }
+          default: ''
+          // validate: {
+          //   validator: function (v: string) {
+          //     return /^(http|https):\/\/[^ "]+$/.test(v);
+          //   },
+          //   message: (props) => `${props.value} is not a valid URL!`
+          // }
+        },
+        thumbnail: {
+          type: String,
+          default: ''
         }
       }
     ],
@@ -53,14 +58,42 @@ const applicantSchema = new Schema<IApplicantDoc, IApplicantModel>(
       type: String,
       enum: Object.values(RESUME_STATUS),
       default: RESUME_STATUS.PENDING
+    },
+    thumbnail: {
+      type: String,
+      default: ''
+    },
+    slug: {
+      type: String,
+      unique: true
     }
   },
   { timestamps: true }
 );
 
+// Create compound index and text index
+applicantSchema.index({ 'user.firstName': 'text', 'user.lastName': 'text' });
+
 // Plugin
 applicantSchema.plugin(toJSON);
 applicantSchema.plugin(paginate);
+
+// Pre-save hook to generate slug
+applicantSchema.pre<IApplicantDoc>('save', async function (next) {
+  if (!this.isModified('user') || !this.isNew) {
+    return next();
+  }
+
+  const user: any = await this.model('User').findById(this.user);
+  if (!user) {
+    return next(new Error('Associated user not found'));
+  }
+
+  // current date and time like: 2021-08-01T12-00-00
+  const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+  this.slug = `${user.firstName.toLowerCase()}-${user.lastName.toLowerCase()}-${date}`;
+  next();
+});
 
 /**
  * @name isProfileComplete
@@ -80,6 +113,29 @@ applicantSchema.statics.isProfileComplete = async function (userId: string): Pro
 
   return true;
 };
+
+/**
+ * @name howMuchProfileIsComplete
+ * @description Check how much of the user's profile is complete in percentage
+ * @param {string} userId - The user id
+ */
+applicantSchema.statics.howMuchProfileIsComplete = async function (
+  userId: string
+): Promise<number> {
+  const applicant: any = await this.findOne({ user: userId });
+  if (!applicant) {
+    return 0;
+  }
+
+  let complete = 0;
+  if (applicant.resume) complete += 25;
+  if (applicant.intro) complete += 25;
+  if (applicant?.skills.length > 0) complete += 25;
+  if (applicant.education) complete += 25;
+
+  return complete;
+};
+
 const Applicant = model<IApplicantDoc, IApplicantModel>('Applicant', applicantSchema);
 
 export default Applicant;

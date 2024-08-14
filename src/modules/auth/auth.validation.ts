@@ -54,11 +54,9 @@ export const forgotPassword = {
 };
 
 export const resetPassword = {
-  qeury: Joi.object().keys({
-    token: Joi.string().required()
-  }),
   body: Joi.object().keys({
-    password: Joi.string().required().custom(password)
+    password: Joi.string().required().custom(password),
+    otp: Joi.string().required().max(4).min(4)
   })
 };
 
@@ -71,5 +69,12 @@ export const verifyEmail = {
 export const verifyOtp = {
   body: Joi.object().keys({
     otp: Joi.string().required().max(4).min(4)
+  })
+};
+
+export const changePassword = {
+  body: Joi.object().keys({
+    oldPassword: Joi.string().required(),
+    newPassword: Joi.string().required().custom(password)
   })
 };

@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
 
-import { authController, authValidation } from '../modules/auth';
+import { auth, authController, authValidation } from '../modules/auth';
 import { validate } from '../validation';
 
 const router: Router = express.Router();
@@ -17,8 +17,13 @@ router.post(
   validate(authValidation.resetPassword),
   authController.resetPassword
 );
-router.post('/verify-email', validate(authValidation.verifyEmail), authController.verifyEmail);
 router.post('/verify-otp', validate(authValidation.verifyOtp), authController.verfiyOtp);
+router.patch(
+  '/change-password',
+  auth('updateOwn'),
+  validate(authValidation.changePassword),
+  authController.changePassword
+);
 
 export default router;
 

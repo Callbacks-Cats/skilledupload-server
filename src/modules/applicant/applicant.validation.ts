@@ -95,3 +95,40 @@ export const approverApplicantProfile = {
     applicantId: Joi.string().required().custom(objectId)
   }
 };
+
+export const createUserApplicantByAdmin = {
+  body: Joi.object().keys({
+    firstName: Joi.string().required(),
+    lastName: Joi.string().required(),
+    phoneNumber: Joi.string().required(),
+    resume: Joi.string().required(),
+    intro: Joi.string(),
+    skills: Joi.array().items(
+      Joi.object({
+        jobCategory: Joi.string().required().custom(objectId),
+        yearsOfExperience: Joi.number().required()
+      })
+    ),
+    videoResume: Joi.array().items(Joi.string()).max(3),
+    education: Joi.object({
+      title: Joi.string().required(),
+      year: Joi.number().required()
+    }),
+    thumbnail: Joi.string()
+  })
+};
+
+export const getAllApplicants = {
+  query: Joi.object().keys({
+    status: Joi.string().valid('approved', 'pending', 'rejected'),
+    sortBy: Joi.string(),
+    limit: Joi.number(),
+    page: Joi.number()
+  })
+};
+
+export const getApplicantBySlug = {
+  params: {
+    slug: Joi.string().required()
+  }
+};

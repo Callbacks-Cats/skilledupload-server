@@ -17,6 +17,8 @@ export interface IApplicant {
     year: string;
   };
   status: string;
+  thumbnail?: string;
+  slug: string;
 }
 
 export interface IApplicantDoc extends IApplicant, Document {}

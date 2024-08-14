@@ -40,6 +40,33 @@ export const sendEmail = async (
 };
 
 /**
+ * Send OTP Verfication Email
+ * @param {string} to
+ * @param {string} otp
+ * @returns {Promise<void>}
+ */
+export const sendOtpVerificationEmail = async (to: string, otp: string) => {
+  const subject = 'OTP Verification';
+  const text = `Your OTP is ${otp}`;
+  const html = `<div style="margin:30px; padding:30px; border:1px solid black; border-radius: 20px 10px;"><h4><strong>Dear user,</strong></h4>
+  <p>Your OTP is ${otp}</p></div>`;
+  await sendEmail(to, subject, text, html);
+};
+
+/**
+ * Send Forgot password OTP Email
+ * @param {string} to
+ * @param {string} otp
+ */
+export const sendForgotPasswordOtpEmail = async (to: string, otp: string) => {
+  const subject = 'Forgot Password OTP';
+  const text = `Your OTP is ${otp}`;
+  const html = `<div style="margin:30px; padding:30px; border:1px solid black; border-radius: 20px 10px;"><h4><strong>Dear user,</strong></h4>
+  <p>Your OTP is ${otp}</p></div>`;
+  await sendEmail(to, subject, text, html);
+};
+
+/**
  * Send reset password email
  * @param {string} to
  * @param {string} token

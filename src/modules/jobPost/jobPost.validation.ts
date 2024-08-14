@@ -1,0 +1,48 @@
+import Joi from 'joi';
+
+export const createJobPost = {
+  body: Joi.object().keys({
+    title: Joi.string().required(),
+    description: Joi.string().required(),
+    location: Joi.string().required(),
+    date: Joi.date().required(),
+    company: Joi.string().required(),
+    gender: Joi.string().required(),
+    experience: Joi.number().required(),
+    education: Joi.string().required(),
+    careerLevel: Joi.string().required(),
+    salary: Joi.number().required(),
+    image: Joi.string().required()
+    // createdBy: Joi.string().required().custom(objectId)
+  })
+};
+
+export const getPostBySlug = {
+  params: Joi.object().keys({
+    slug: Joi.string().required()
+  })
+};
+
+export const updateJobPost = {
+  params: {
+    slug: Joi.string().required()
+  },
+  body: Joi.object()
+    .keys({
+      title: Joi.string(),
+      description: Joi.string(),
+      location: Joi.string(),
+      date: Joi.date(),
+      company: Joi.string(),
+      gender: Joi.string(),
+      experience: Joi.number(),
+      education: Joi.string(),
+      careerLevel: Joi.string(),
+      salary: Joi.number(),
+      image: Joi.string()
+    })
+    .min(1)
+    .messages({
+      'object.min': 'You must provide at least one field to update'
+    })
+};
