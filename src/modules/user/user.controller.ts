@@ -23,10 +23,10 @@ export const getUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const updateUpdateProfilePicture = catchAsync(async (req: Request, res: Response) => {
-  console.log('Calling ', req.user);
   const user = await userService.updateProfilePicture(
+    req,
     (req.user as IUserDoc)?.id,
-    req.file?.buffer as Buffer
+    req.file as any
   );
   return SendResponse(res, true, user, httpStatus.OK, 'Profile picture updated successfully');
 });

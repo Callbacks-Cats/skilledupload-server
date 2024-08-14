@@ -9,7 +9,7 @@ export const uploadFile = catchAsync(async (req: Request, res: Response) => {
   if (!file) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Please upload a file');
   }
-  const result = await storageService.uploadFile(file as any);
+  const result = await storageService.uploadFile(req, file as any);
   return SendResponse(res, true, result, httpStatus.OK, 'File uploaded successfully');
 });
 

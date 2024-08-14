@@ -1,9 +1,8 @@
+import { Request } from 'express';
 import httpStatus from 'http-status';
-import moment from 'moment';
 import mongoose, { Types } from 'mongoose';
-import { CONTENT_TYPES, FILE_TYPES, SPACE_FOLDERS, USER_ROLES } from '../../constants';
-import { deleteFileFromSpace, updateFileInSpace } from '../../lib';
-import { resizeImage } from '../../lib/media.manipulation';
+import { USER_ROLES } from '../../constants';
+import { deleteFileFromLocal, uploadFileToLocal } from '../../lib/files';
 import { ApiError } from '../../utils';
 import { IUserDoc, NewCreatedUser, UpdateUserBody } from './user.interface';
 import User from './user.model';
@@ -95,34 +94,39 @@ export const updateUserById = async (
  * @returns {Promise<IUserDoc | null>}
  */
 export const updateProfilePicture = async (
+  req: Request,
   userId: mongoose.Types.ObjectId,
-  profilePicture: Buffer
+  profilePicture: any
 ): Promise<IUserDoc | null> => {
   let user = await getUserById(userId);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
   const oldImage = user.profilePicture;
-  const currentTimeStamp = moment().format('YYYY-MM-DD-HH-mm-ss');
+  // const currentTimeStamp = moment().format('YYYY-MM-DD-HH-mm-ss');
 
-  const fileName = `${userId}-${currentTimeStamp}.jpg`;
-  const resizedImage = await resizeImage(profilePicture, { width: 250, height: 250 });
+  // const fileName = `${userId}-${currentTimeStamp}.jpg`;
+  // const resizedImage = await resizeImage(profilePicture, { width: 250, height: 250 });
 
   try {
-    const uploadedImage = await updateFileInSpace(
-      FILE_TYPES.IMAGE,
-      resizedImage,
-      fileName,
-      SPACE_FOLDERS.PROFILE_PICTURE,
-      CONTENT_TYPES.IMAGE
-    );
+    // const uploadedImage = await updateFileInSpace(
+    //   FILE_TYPES.IMAGE,
+    //   resizedImage,
+    //   fileName,
+    //   SPACE_FOLDERS.PROFILE_PICTURE,
+    //   CONTENT_TYPES.IMAGE
+    // );
+    const uploadedImage = await uploadFileToLocal(req, profilePicture);
     if (uploadedImage) {
-      await deleteFileFromSpace(
-        FILE_TYPES.IMAGE,
-        oldImage as string,
-        SPACE_FOLDERS.PROFILE_PICTURE
-      );
-      user = await updateUserById(userId.toString(), { profilePicture: uploadedImage.url });
+      // await deleteFileFromSpace(
+      //   FILE_TYPES.IMAGE,
+      //   oldImage as string,
+      //   SPACE_FOLDERS.PROFILE_PICTURE
+      // );
+      if (oldImage) {
+        await deleteFileFromLocal(oldImage as string);
+      }
+      user = await updateUserById(userId.toString(), { profilePicture: uploadedImage as string });
     }
 
     return user;
