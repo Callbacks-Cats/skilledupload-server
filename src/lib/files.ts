@@ -74,9 +74,8 @@ export const deleteFileFromLocal = async (fileUrl: string): Promise<Boolean | Er
       // Delete the file
       fs.unlinkSync(filePath);
       return true;
-    } else {
-      throw new Error('File not found');
     }
+    return true;
   } catch (error: any) {
     throw new Error(error.message);
   }
