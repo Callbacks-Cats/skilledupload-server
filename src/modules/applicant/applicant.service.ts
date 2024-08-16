@@ -1,3 +1,4 @@
+import { Request } from 'express';
 import httpStatus from 'http-status';
 import mongoose, { Types } from 'mongoose';
 import {
@@ -8,7 +9,8 @@ import {
   USER_ROLES,
   USER_STATUSES
 } from '../../constants';
-import { deleteFileFromSpace, updateFileInSpace } from '../../lib';
+import { updateFileInSpace } from '../../lib';
+import { deleteFileFromLocal, uploadFileToLocal } from '../../lib/files';
 import { IOptions } from '../../plugin/paginate';
 import { ApiError } from '../../utils';
 import { userService } from '../user';
@@ -193,7 +195,11 @@ export const udpateApplicantByUserId = async (
  * @param {Buffer} file
  * @returns {Promise<IApplicantDoc>}
  */
-export const uploadResume = async (userId: string, file: Buffer): Promise<IApplicantDoc | null> => {
+export const uploadResume = async (
+  req: Request,
+  userId: string,
+  file: any
+): Promise<IApplicantDoc | null> => {
   const applicant = await getApplicantByUserId(userId);
   if (!applicant) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Applicant not found');
@@ -207,29 +213,35 @@ export const uploadResume = async (userId: string, file: Buffer): Promise<IAppli
   try {
     session.startTransaction();
     // TODO-1: Upload file to the Digital Ocean Space
-    const updatedFile = await updateFileInSpace(
-      FILE_TYPES.FILE,
-      file,
-      fileName,
-      SPACE_FOLDERS.RESUME,
-      CONTENT_TYPES.FILE
-    );
+    // const updatedFile = await updateFileInSpace(
+    //   FILE_TYPES.FILE,
+    //   file,
+    //   fileName,
+    //   SPACE_FOLDERS.RESUME,
+    //   CONTENT_TYPES.FILE
+    // );
+    const updatedFile = await uploadFileToLocal(req, file);
 
     // TODO-2: Save the file url to the applicant document
     if (updatedFile) {
       // delete old file form space
       if (applicant.resume) {
-        await deleteFileFromSpace(
-          FILE_TYPES.FILE,
-          applicant.resume.split('/').pop() as string,
-          SPACE_FOLDERS.RESUME
-        );
+        const oldResume = applicant?.resume;
+        if (oldResume) {
+          await deleteFileFromLocal(oldResume);
+        }
+
+        // await deleteFileFromSpace(
+        //   FILE_TYPES.FILE,
+        //   applicant.resume.split('/').pop() as string,
+        //   SPACE_FOLDERS.RESUME
+        // );
       }
 
       const updatedApplicant = await udpateApplicantByUserId(
         userId,
         {
-          resume: updatedFile.url
+          resume: updatedFile as string
         },
         { session }
       );
@@ -238,7 +250,6 @@ export const uploadResume = async (userId: string, file: Buffer): Promise<IAppli
       return (updatedApplicant as IApplicantDoc).populate('user');
     }
   } catch (error) {
-    console.log('Error: ', error);
     await session.abortTransaction();
     session.endSession();
     throw new ApiError(
@@ -256,8 +267,9 @@ export const uploadResume = async (userId: string, file: Buffer): Promise<IAppli
  * @returns {Promise<IApplicantDoc>}
  */
 export const uploadVideoResume = async (
+  req: Request,
   userId: string,
-  file: Buffer,
+  file: any,
   thumbnail: string
 ): Promise<IApplicantDoc | null> => {
   const applicant = await getApplicantByUserId(userId);
@@ -278,20 +290,22 @@ export const uploadVideoResume = async (
     let fileName = `video-${userId}-${uniqueId}.mp4`;
 
     // TODO-1: Upload file to the Digital Ocean Space
-    const uploadedFile = await updateFileInSpace(
-      FILE_TYPES.VIDEO,
-      file,
-      fileName,
-      SPACE_FOLDERS.VIDEO_RESUME,
-      CONTENT_TYPES.VIDEO
-    );
-    if (uploadedFile.success) {
+    // const uploadedFile = await updateFileInSpace(
+    //   FILE_TYPES.VIDEO,
+    //   file,
+    //   fileName,
+    //   SPACE_FOLDERS.VIDEO_RESUME,
+    //   CONTENT_TYPES.VIDEO
+    // );
+    const uploadedFile = await uploadFileToLocal(req, file);
+
+    if (uploadedFile) {
       const updatedApplicant = await udpateApplicantByUserId(
         userId,
         {
           $push: {
             videoResume: {
-              file: uploadedFile.url,
+              file: uploadedFile as string,
               thumbnail: thumbnail
             }
           }
@@ -341,11 +355,14 @@ export const deleteVideoResumeByUser = async (
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    const deletedFile = await deleteFileFromSpace(
-      FILE_TYPES.VIDEO,
-      videoResume?.file?.split('/').pop() as string,
-      SPACE_FOLDERS.VIDEO_RESUME
-    );
+
+    // const deletedFile = await deleteFileFromSpace(
+    //   FILE_TYPES.VIDEO,
+    //   videoResume?.file?.split('/').pop() as string,
+    //   SPACE_FOLDERS.VIDEO_RESUME
+    // );
+    const deletedFile = await deleteFileFromLocal(videoResume?.file);
+
     if (deletedFile) {
       applicant = await udpateApplicantByUserId(
         userId,
@@ -360,11 +377,12 @@ export const deleteVideoResumeByUser = async (
       );
 
       // delete thumbnail
-      await deleteFileFromSpace(
-        FILE_TYPES.IMAGE,
-        videoResume?.thumbnail?.split('/').pop() as string,
-        SPACE_FOLDERS.VIDEO_RESUME
-      );
+      // await deleteFileFromSpace(
+      //   FILE_TYPES.IMAGE,
+      //   videoResume?.thumbnail?.split('/').pop() as string,
+      //   SPACE_FOLDERS.VIDEO_RESUME
+      // );
+      await deleteFileFromLocal(videoResume?.thumbnail);
 
       await session.commitTransaction();
       session.endSession();

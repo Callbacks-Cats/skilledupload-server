@@ -53,7 +53,7 @@ export const uploadFileToLocal = async (req: Request, file: FileType): Promise<s
   }
 };
 
-export const deleteFileFromLocal = async (fileUrl: string): Promise<void | Error> => {
+export const deleteFileFromLocal = async (fileUrl: string): Promise<Boolean | Error> => {
   try {
     if (!fileUrl) {
       throw new Error('No file URL provided');
@@ -73,6 +73,7 @@ export const deleteFileFromLocal = async (fileUrl: string): Promise<void | Error
     if (fs.existsSync(filePath)) {
       // Delete the file
       fs.unlinkSync(filePath);
+      return true;
     } else {
       throw new Error('File not found');
     }

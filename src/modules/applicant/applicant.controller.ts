@@ -41,16 +41,18 @@ export const uploadResume = catchAsync(async (req: Request, res: Response) => {
   }
 
   const applicant = await applicantService.uploadResume(
+    req,
     (req.user as IUserDoc)?.id,
-    req?.file?.buffer as Buffer
+    req?.file as any
   );
   return SendResponse(res, true, applicant, httpStatus.OK, 'Resume uploaded successfully');
 });
 
 export const uploadVideoResume = catchAsync(async (req: Request, res: Response) => {
   const applicant = await applicantService.uploadVideoResume(
+    req,
     (req.user as IUserDoc)?.id,
-    req?.file?.buffer as Buffer,
+    req?.file,
     req?.body?.thumbnail
   );
   return SendResponse(res, true, applicant, httpStatus.OK, 'Video resume uploaded successfully');
@@ -83,7 +85,6 @@ export const categoryWiseApplicants = catchAsync(async (req: Request, res: Respo
 });
 
 export const uploadVideoResumethumbnail = catchAsync(async (req: Request, res: Response) => {
-  console.log('req.body', req.body);
   const thumbnail = await applicantService.uploadVideoResumethumbnail(req.body.thumbnail);
   return SendResponse(
     res,
