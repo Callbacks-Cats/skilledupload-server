@@ -205,9 +205,6 @@ export const uploadResume = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'Applicant not found');
   }
 
-  const currentTimestamp = new Date().getTime();
-  let fileName = `resume-${userId}-${currentTimestamp}.pdf`;
-
   const session = await Applicant.startSession();
 
   try {
@@ -249,12 +246,13 @@ export const uploadResume = async (
       session.endSession();
       return (updatedApplicant as IApplicantDoc).populate('user');
     }
-  } catch (error) {
+  } catch (error: any) {
+    console.log('error: ', error);
     await session.abortTransaction();
     session.endSession();
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
-      'Resume could not be uploaded. Please try again'
+      error.message || 'Resume could not be uploaded. Please try again'
     );
   }
   return applicant;
