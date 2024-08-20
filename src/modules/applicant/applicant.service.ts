@@ -1,15 +1,7 @@
 import { Request } from 'express';
 import httpStatus from 'http-status';
 import mongoose, { Types } from 'mongoose';
-import {
-  CONTENT_TYPES,
-  FILE_TYPES,
-  RESUME_STATUS,
-  SPACE_FOLDERS,
-  USER_ROLES,
-  USER_STATUSES
-} from '../../constants';
-import { updateFileInSpace } from '../../lib';
+import { RESUME_STATUS, USER_ROLES, USER_STATUSES } from '../../constants';
 import { deleteMedia, uploadMedia } from '../../lib/cloudinary';
 import { IOptions } from '../../plugin/paginate';
 import { ApiError, extractPublicId } from '../../utils';
@@ -549,18 +541,19 @@ export const uploadVideoResumethumbnail = async (file: Buffer): Promise<any> => 
   let fileName = `thumbnail-${currentTimestamp}.png`;
 
   try {
-    const updatedFile = await updateFileInSpace(
-      FILE_TYPES.IMAGE,
-      file,
-      fileName,
-      SPACE_FOLDERS.THUMBNAIL,
-      CONTENT_TYPES.IMAGE
-    );
-
+    // const updatedFile = await updateFileInSpace(
+    //   FILE_TYPES.IMAGE,
+    //   file,
+    //   fileName,
+    //   SPACE_FOLDERS.THUMBNAIL,
+    //   CONTENT_TYPES.IMAGE
+    // );
+    // const updatedFile = await uploadMedia(file?.path, '');
     // TODO-2: Save the file url to the applicant document
-    if (updatedFile) {
-      return updatedFile?.url;
-    }
+    // if (updatedFile) {
+    //   return updatedFile?.url;
+    // }
+    return fileName;
   } catch (error) {
     throw new ApiError(
       httpStatus.INTERNAL_SERVER_ERROR,
