@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { imageUploader } from '../lib';
+import { uploader } from '../lib';
 import { auth } from '../modules/auth';
 import { userController, userValidation } from '../modules/user';
 import { validate } from '../validation';
@@ -9,7 +9,8 @@ const router: Router = express.Router();
 router.patch(
   '/update-profile-picture',
   auth('updateOwn'),
-  imageUploader.single('image'),
+  // imageUploader.single('image'),
+  uploader.single('image'),
   userController.updateUpdateProfilePicture
 );
 

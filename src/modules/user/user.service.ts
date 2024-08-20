@@ -2,8 +2,8 @@ import { Request } from 'express';
 import httpStatus from 'http-status';
 import mongoose, { Types } from 'mongoose';
 import { USER_ROLES } from '../../constants';
-import { deleteFileFromLocal, uploadFileToLocal } from '../../lib/files';
-import { ApiError } from '../../utils';
+import { deleteMedia, uploadMedia } from '../../lib/cloudinary';
+import { ApiError, extractPublicId } from '../../utils';
 import { IUserDoc, NewCreatedUser, UpdateUserBody } from './user.interface';
 import User from './user.model';
 
@@ -103,31 +103,16 @@ export const updateProfilePicture = async (
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
   const oldImage = user.profilePicture;
-  // const currentTimeStamp = moment().format('YYYY-MM-DD-HH-mm-ss');
-
-  // const fileName = `${userId}-${currentTimeStamp}.jpg`;
-  // const resizedImage = await resizeImage(profilePicture, { width: 250, height: 250 });
 
   try {
-    // const uploadedImage = await updateFileInSpace(
-    //   FILE_TYPES.IMAGE,
-    //   resizedImage,
-    //   fileName,
-    //   SPACE_FOLDERS.PROFILE_PICTURE,
-    //   CONTENT_TYPES.IMAGE
-    // );
-    const uploadedImage = await uploadFileToLocal(req, profilePicture);
-    if (uploadedImage) {
-      // await deleteFileFromSpace(
-      //   FILE_TYPES.IMAGE,
-      //   oldImage as string,
-      //   SPACE_FOLDERS.PROFILE_PICTURE
-      // );
-      if (oldImage) {
-        await deleteFileFromLocal(oldImage as string);
-      }
-      user = await updateUserById(userId.toString(), { profilePicture: uploadedImage as string });
+    const uploadedImage = await uploadMedia(profilePicture?.path, '');
+
+    if (oldImage) {
+      await deleteMedia(extractPublicId(oldImage as string));
     }
+    user = await updateUserById(userId.toString(), {
+      profilePicture: uploadedImage?.secure_url as string
+    });
 
     return user;
   } catch (error) {
@@ -139,7 +124,7 @@ export const updateProfilePicture = async (
  * Generate a random password
  * @returns {string}
  */
-export const generatePassword = () => {
+export const generatePassword = (): string => {
   var length = 10;
   var capitalLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   var lowercaseLetters = 'abcdefghijklmnopqrstuvwxyz';

@@ -1,10 +1,11 @@
 import express, { Router } from 'express';
-import { fileUploader } from '../lib';
+import { uploader } from '../lib';
 import { storageController } from '../modules/storage';
 
 const router: Router = express.Router();
 
-router.post('/upload', fileUploader.single('file'), storageController.uploadFile);
+// router.post('/upload', fileUploader.single('file'), storageController.uploadFile);
+router.post('/upload', uploader.single('file'), storageController.uploadFile);
 router.delete('/delete', storageController.deleteFile);
 
 export default router;

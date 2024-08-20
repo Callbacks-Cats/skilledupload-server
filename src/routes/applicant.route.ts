@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { fileUploader } from '../lib';
+import { fileUploader, uploader } from '../lib';
 import {
   applicantController,
   applicantMiddleware,
@@ -30,7 +30,8 @@ router.post(
 router.patch(
   '/upload-resume',
   auth('uploadResume'),
-  fileUploader.single('resume'),
+  // fileUploader.single('resume'),
+  uploader.single('resume'),
   applicantController.uploadResume
 );
 
@@ -38,7 +39,8 @@ router.patch(
   '/upload-video-resume',
   auth('uploadResume'),
   applicantMiddleware.isVideoResumeLimitExceeded,
-  fileUploader.single('video'),
+  // fileUploader.single('video'),
+  uploader.single('video'),
   applicantController.uploadVideoResume
 );
 

@@ -4,5 +4,6 @@ export * from './ApiError';
 export * from './catchAsync';
 export * from './logger';
 export * from './pick';
+export * from './utils';
 
 export { error, morgan };

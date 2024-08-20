@@ -10,9 +10,9 @@ import {
   USER_STATUSES
 } from '../../constants';
 import { updateFileInSpace } from '../../lib';
-import { deleteFileFromLocal, uploadFileToLocal } from '../../lib/files';
+import { deleteMedia, uploadMedia } from '../../lib/cloudinary';
 import { IOptions } from '../../plugin/paginate';
-import { ApiError } from '../../utils';
+import { ApiError, extractPublicId } from '../../utils';
 import { userService } from '../user';
 import { IApplicantBody, IApplicantDoc } from './applicant.interface';
 import Applicant from './applicant.model';
@@ -209,36 +209,20 @@ export const uploadResume = async (
 
   try {
     session.startTransaction();
-    // TODO-1: Upload file to the Digital Ocean Space
-    // const updatedFile = await updateFileInSpace(
-    //   FILE_TYPES.FILE,
-    //   file,
-    //   fileName,
-    //   SPACE_FOLDERS.RESUME,
-    //   CONTENT_TYPES.FILE
-    // );
-    const updatedFile = await uploadFileToLocal(req, file);
+    const uploadedFile = await uploadMedia(file?.path, '');
 
-    // TODO-2: Save the file url to the applicant document
-    if (updatedFile) {
-      // delete old file form space
+    if (uploadedFile?.secure_url) {
       if (applicant.resume) {
         const oldResume = applicant?.resume;
         if (oldResume) {
-          await deleteFileFromLocal(oldResume);
+          await deleteMedia(extractPublicId(oldResume));
         }
-
-        // await deleteFileFromSpace(
-        //   FILE_TYPES.FILE,
-        //   applicant.resume.split('/').pop() as string,
-        //   SPACE_FOLDERS.RESUME
-        // );
       }
 
       const updatedApplicant = await udpateApplicantByUserId(
         userId,
         {
-          resume: updatedFile as string
+          resume: uploadedFile?.url as string
         },
         { session }
       );
@@ -247,7 +231,6 @@ export const uploadResume = async (
       return (updatedApplicant as IApplicantDoc).populate('user');
     }
   } catch (error: any) {
-    console.log('error: ', error);
     await session.abortTransaction();
     session.endSession();
     throw new ApiError(
@@ -284,18 +267,7 @@ export const uploadVideoResume = async (
   try {
     session.startTransaction();
 
-    let uniqueId = new mongoose.Types.ObjectId().toHexString();
-    let fileName = `video-${userId}-${uniqueId}.mp4`;
-
-    // TODO-1: Upload file to the Digital Ocean Space
-    // const uploadedFile = await updateFileInSpace(
-    //   FILE_TYPES.VIDEO,
-    //   file,
-    //   fileName,
-    //   SPACE_FOLDERS.VIDEO_RESUME,
-    //   CONTENT_TYPES.VIDEO
-    // );
-    const uploadedFile = await uploadFileToLocal(req, file);
+    const uploadedFile = await uploadMedia(file?.path, '');
 
     if (uploadedFile) {
       const updatedApplicant = await udpateApplicantByUserId(
@@ -303,7 +275,7 @@ export const uploadVideoResume = async (
         {
           $push: {
             videoResume: {
-              file: uploadedFile as string,
+              file: uploadedFile?.url as string,
               thumbnail: thumbnail
             }
           }
@@ -354,12 +326,9 @@ export const deleteVideoResumeByUser = async (
   try {
     session.startTransaction();
 
-    // const deletedFile = await deleteFileFromSpace(
-    //   FILE_TYPES.VIDEO,
-    //   videoResume?.file?.split('/').pop() as string,
-    //   SPACE_FOLDERS.VIDEO_RESUME
-    // );
-    const deletedFile = await deleteFileFromLocal(videoResume?.file);
+    const deletedFile = await deleteMedia(extractPublicId(videoResume?.file), {
+      resource_type: 'video'
+    });
 
     if (deletedFile) {
       applicant = await udpateApplicantByUserId(
@@ -374,14 +343,7 @@ export const deleteVideoResumeByUser = async (
         { session }
       );
 
-      // delete thumbnail
-      // await deleteFileFromSpace(
-      //   FILE_TYPES.IMAGE,
-      //   videoResume?.thumbnail?.split('/').pop() as string,
-      //   SPACE_FOLDERS.VIDEO_RESUME
-      // );
-      await deleteFileFromLocal(videoResume?.thumbnail);
-
+      await deleteMedia(extractPublicId(videoResume?.thumbnail));
       await session.commitTransaction();
       session.endSession();
       return (applicant as IApplicantDoc).populate('user');

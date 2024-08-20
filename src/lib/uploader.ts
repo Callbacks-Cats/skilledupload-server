@@ -46,12 +46,13 @@ let validateVideoFile = function (file: any, cb: any) {
 export const fileUploader = multer({
   storage: multer.memoryStorage(),
   fileFilter: function (req, file, callback) {
-    let fileType = file.mimetype.split('/')[0];
-
-    if (fileType === 'video') {
+    // if file is video
+    if (file.fieldname === 'video') {
       validateVideoFile(file, callback);
     } else {
       validateFile(file, callback);
     }
   }
 });
+
+export const uploader = multer({ storage: storage });

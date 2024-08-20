@@ -32,7 +32,11 @@ const envVarsSchema = Joi.object()
     DO_ENDPOINT: Joi.string().description('Digital Ocean Spaces endpoint'),
     DO_BUCKET: Joi.string().description('Digital Ocean Spaces bucket name'),
     DO_ACCESS_KEY: Joi.string().description('Digital Ocean Spaces access key'),
-    DO_SECRET_KEY: Joi.string().description('Digital Ocean Spaces secret key')
+    DO_SECRET_KEY: Joi.string().description('Digital Ocean Spaces secret key'),
+    // cloudinary
+    CLOUDINARY_NAME: Joi.string().description('Cloudinary cloud name'),
+    CLOUDINARY_API_KEY: Joi.string().description('Cloudinary API key'),
+    CLOUDINARY_API_SECRET: Joi.string().description('Cloudinary API secret')
   })
   .unknown();
 
@@ -74,5 +78,10 @@ export default {
     bucket: envVars.DO_SPACES_BUCKET_NAME,
     accessKey: envVars.DO_SPACES_ACCESS_KEY_ID,
     secretKey: envVars.DO_SPACES_SECRET_ACCESS_KEY
+  },
+  cloudinary: {
+    name: envVars.CLOUDINARY_NAME,
+    apiKey: envVars.CLOUDINARY_API_KEY,
+    apiSecret: envVars.CLOUDINARY_API_SECRET
   }
 };
