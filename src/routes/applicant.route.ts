@@ -94,4 +94,6 @@ router.post(
   applicantController.uploadVideoResumethumbnail
 );
 
+router.delete('/:applicantId/delete', auth('deleteApplicant'), applicantController.deleteApplicant);
+
 export default router;

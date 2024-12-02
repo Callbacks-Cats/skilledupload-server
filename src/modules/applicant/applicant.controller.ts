@@ -94,3 +94,8 @@ export const uploadVideoResumethumbnail = catchAsync(async (req: Request, res: R
     'Video resume thumbnail uploaded successfully'
   );
 });
+
+export const deleteApplicant = catchAsync(async (req: Request, res: Response) => {
+  const applicant = await applicantService.deleteApplicant(req.params.applicantId);
+  return SendResponse(res, true, applicant, httpStatus.OK, 'Applicant deleted successfully');
+});

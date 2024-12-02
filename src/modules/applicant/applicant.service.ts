@@ -5,7 +5,7 @@ import { RESUME_STATUS, USER_ROLES, USER_STATUSES } from '../../constants';
 import { deleteMedia, uploadMedia } from '../../lib/cloudinary';
 import { IOptions } from '../../plugin/paginate';
 import { ApiError, extractPublicId } from '../../utils';
-import { userService } from '../user';
+import { User, userService } from '../user';
 import { IApplicantBody, IApplicantDoc } from './applicant.interface';
 import Applicant from './applicant.model';
 
@@ -560,4 +560,37 @@ export const uploadVideoResumethumbnail = async (file: Buffer): Promise<any> => 
       'Thumbnail could not be uploaded. Please try again'
     );
   }
+};
+
+export const deleteApplicant = async (applicantId: string): Promise<any> => {
+  const applicant = await getApplicantById(applicantId);
+  const userId = applicant?.user;
+  const resumeUrl = applicant?.resume;
+
+  // delete resume
+  try {
+    if (resumeUrl) {
+      await deleteMedia(extractPublicId(resumeUrl));
+    }
+  } catch (err) {
+    //
+  }
+
+  // delete video resume
+  try {
+    if ((applicant?.videoResume?.length as number) > 0) {
+      applicant?.videoResume?.forEach(async (video: any) => {
+        await deleteMedia(extractPublicId(video?.file), { resource_type: 'video' });
+        await deleteMedia(extractPublicId(video?.thumbnail));
+      });
+    }
+  } catch (err) {
+    //
+  }
+
+  // delete applicant & user;
+  await Applicant.findOneAndDelete({ _id: applicantId });
+  await User.findOneAndDelete({ _id: userId });
+
+  return applicant;
 };
